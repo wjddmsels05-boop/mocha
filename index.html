@@ -478,6 +478,31 @@
         </div>
     </div>
 
+    <!-- MODAL: EDIT PROFILE (프로필 편집) -->
+    <div id="modal-edit-profile" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-md w-full p-6 space-y-4 shadow-xl">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold text-sm">프로필 편집</h3>
+                <button onclick="closeModal('modal-edit-profile')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <form onsubmit="handleSaveProfile(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">이름 (Full Name)</label>
+                    <input type="text" id="edit-profile-fullname" required class="w-full border rounded-lg p-2 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">프로필 사진 파일 (선택)</label>
+                    <input type="file" id="edit-profile-avatar-file" accept="image/*" class="w-full text-xs text-gray-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">소개글 (Bio)</label>
+                    <textarea id="edit-profile-bio" rows="3" class="w-full border rounded-lg p-2 text-sm"></textarea>
+                </div>
+                <button type="submit" class="w-full py-2 bg-pink-500 text-white rounded-lg font-semibold text-sm">편집 저장</button>
+            </form>
+        </div>
+    </div>
+
     <script>
         const INITIAL_DATA = {
             isAdmin: false,
@@ -776,7 +801,6 @@
             const chatHistory = store.dms[key] || [];
 
             chatHistory.forEach((msg, idx) => {
-                // 날짜 구분선 렌더링
                 if (msg.isDivider) {
                     const div = document.createElement('div');
                     div.className = 'flex items-center justify-center my-3 group relative cursor-pointer';
@@ -913,6 +937,48 @@
                 saveStore();
                 renderDmView();
                 closeModal('modal-edit-dm');
+            }
+        }
+
+        // 프로필 편집 모달 오픈 및 저장 함수
+        function openEditProfileModal() {
+            if (!store.isAdmin) return;
+            const acc = store.accounts[activeProfileId];
+            if (!acc) return;
+
+            document.getElementById('edit-profile-fullname').value = acc.fullName || '';
+            document.getElementById('edit-profile-bio').value = acc.bio || '';
+            document.getElementById('modal-edit-profile').classList.remove('hidden');
+        }
+
+        function handleSaveProfile(e) {
+            e.preventDefault();
+            if (!store.isAdmin) return;
+            const acc = store.accounts[activeProfileId];
+            if (!acc) return;
+
+            const fullName = document.getElementById('edit-profile-fullname').value.trim();
+            const bio = document.getElementById('edit-profile-bio').value.trim();
+            const fileInput = document.getElementById('edit-profile-avatar-file');
+
+            const saveChanges = (avatarUrl) => {
+                acc.fullName = fullName;
+                acc.bio = bio;
+                if (avatarUrl) acc.avatar = avatarUrl;
+
+                saveStore();
+                renderProfile(activeProfileId);
+                renderAccountSwitcher();
+                updatePovUI();
+                closeModal('modal-edit-profile');
+            };
+
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => saveChanges(e.target.result);
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                saveChanges(null);
             }
         }
 
@@ -1253,7 +1319,6 @@
             document.getElementById('story-emoji-popover').classList.add('hidden');
         }
 
-        // 스토리 답장 보내기 및 DM 대화창으로 바로 이동
         function sendStoryReplyMessage() {
             if (!store.isAdmin || activeStoryViewer.isHighlight) return;
             const input = document.getElementById('story-reply-input');
@@ -1691,7 +1756,6 @@
             if (activeTab === 'profile') renderProfile(activeProfileId);
         }
 
-        // 현재 선택된 시점 캐릭터(store.currentAccount)로 댓글 작성
         function handleAddComment(e, postId) {
             e.preventDefault();
             if (!store.isAdmin) return;
