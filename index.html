@@ -232,14 +232,19 @@
     <!-- STORY VIEWER MODAL (빈곳 클릭 시 닫기 기능 onclick 추가) -->
     <div id="modal-story-viewer" onclick="handleStoryViewerOutsideClick(event)" class="hidden fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-2">
         <div id="story-viewer-card" class="relative w-full max-w-sm h-[85vh] bg-gray-900 rounded-2xl overflow-hidden flex flex-col justify-between p-4 border border-gray-800">
-            <div class="flex items-center justify-between text-white z-10">
-                <div class="flex items-center gap-2">
-                    <img id="story-view-avatar" src="" class="w-8 h-8 rounded-full object-cover">
-                    <span id="story-view-username" class="font-semibold text-sm">username</span>
-                    <span id="story-view-time" class="text-xs text-gray-300 ml-1">시간</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <button onclick="closeModal('modal-story-viewer')" class="text-white text-xl"><i class="fa-solid fa-xmark"></i></button>
+            <!-- 스토리 상단 바 (인디케이터 및 프로필/시간, 삭제 버튼) -->
+            <div class="flex flex-col gap-2 z-10">
+                <div id="story-progress-bars" class="flex gap-1 w-full"></div>
+                <div class="flex items-center justify-between text-white">
+                    <div class="flex items-center gap-2">
+                        <img id="story-view-avatar" src="" class="w-8 h-8 rounded-full object-cover">
+                        <span id="story-view-username" class="font-semibold text-sm">username</span>
+                        <span id="story-view-time" class="text-xs text-gray-300 ml-1">시간</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button id="admin-story-delete-btn" onclick="handleDeleteCurrentStory()" class="hidden text-red-400 hover:text-red-300 text-sm px-2" title="스토리 삭제"><i class="fa-solid fa-trash-can"></i></button>
+                        <button onclick="closeModal('modal-story-viewer')" class="text-white text-xl"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
                 </div>
             </div>
 
@@ -248,24 +253,25 @@
 
             <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <img id="story-view-img" src="" class="w-full h-full object-cover pointer-events-auto">
-                <button id="story-prev-btn" onclick="slideStoryItem(-1)" class="absolute left-2 bg-black/50 hover:bg-black/80 text-white rounded-full w-9 h-9 flex items-center justify-center text-sm z-20 hidden pointer-events-auto">❮</button>
-                <button id="story-next-btn" onclick="slideStoryItem(1)" class="absolute right-2 bg-black/50 hover:bg-black/80 text-white rounded-full w-9 h-9 flex items-center justify-center text-sm z-20 hidden pointer-events-auto">❯</button>
-                <div id="story-pagination-badge" class="absolute top-14 left-1/2 -translate-x-1/2 bg-black/60 text-white text-[10px] px-2.5 py-0.5 rounded-full z-20 hidden">1/1</div>
+                <button id="story-prev-btn" onclick="slideStoryItem(-1)" class="absolute left-2 bg-black/50 hover:bg-black/80 text-white rounded-full w-9 h-9 flex items-center justify-center text-sm z-20 pointer-events-auto">❮</button>
+                <button id="story-next-btn" onclick="slideStoryItem(1)" class="absolute right-2 bg-black/50 hover:bg-black/80 text-white rounded-full w-9 h-9 flex items-center justify-center text-sm z-20 pointer-events-auto">❯</button>
             </div>
 
-            <!-- 인스타 감성의 스토리 반응 요약 및 프로필 리스트 바 -->
-            <div id="story-reactions-display" class="relative z-10 bg-black/40 backdrop-blur-sm px-3 py-2 rounded-xl flex items-center justify-between text-white text-xs cursor-pointer hover:bg-black/60 transition">
-                <div id="story-reactions-avatars" class="flex items-center gap-2 overflow-x-auto hide-scrollbar"></div>
-                <span id="story-reactions-summary-text" class="text-[11px] text-gray-300 font-medium whitespace-nowrap ml-2">활동 없음</span>
-            </div>
+            <!-- 하단부: 이모지 선택 바 바로 윗 위치에 반응 요약 바 배치 -->
+            <div class="relative z-10 space-y-2">
+                <div id="story-reactions-display" class="bg-black/40 backdrop-blur-sm px-3 py-2 rounded-xl flex items-center justify-between text-white text-xs cursor-pointer hover:bg-black/60 transition">
+                    <div id="story-reactions-avatars" class="flex items-center gap-2 overflow-x-auto hide-scrollbar"></div>
+                    <span id="story-reactions-summary-text" class="text-[11px] text-gray-300 font-medium whitespace-nowrap ml-2">활동 없음</span>
+                </div>
 
-            <div id="story-reactions-input-bar" class="relative z-10 bg-black/40 backdrop-blur-md rounded-full px-4 py-2 flex justify-around text-xl text-white">
-                <button onclick="sendStoryEmoji('❤️')">❤️</button>
-                <button onclick="sendStoryEmoji('🔥')">🔥</button>
-                <button onclick="sendStoryEmoji('😂')">😂</button>
-                <button onclick="sendStoryEmoji('😮')">😮</button>
-                <button onclick="sendStoryEmoji('😢')">😢</button>
-                <button onclick="sendStoryEmoji('👏')">👏</button>
+                <div id="story-reactions-input-bar" class="bg-black/40 backdrop-blur-md rounded-full px-4 py-2 flex justify-around text-xl text-white">
+                    <button onclick="sendStoryEmoji('❤️')">❤️</button>
+                    <button onclick="sendStoryEmoji('🔥')">🔥</button>
+                    <button onclick="sendStoryEmoji('😂')">😂</button>
+                    <button onclick="sendStoryEmoji('😮')">😮</button>
+                    <button onclick="sendStoryEmoji('😢')">😢</button>
+                    <button onclick="sendStoryEmoji('👏')">👏</button>
+                </div>
             </div>
         </div>
     </div>
@@ -490,8 +496,8 @@
                 }
             ],
             storyArchive: [
-                { id: 'sa1', author: 'san_choi', image: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600', time: '2시간 전' },
-                { id: 'sa2', author: 'san_choi', image: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=600', time: '어제' }
+                { id: 'sa1', author: 'san_choi', image: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600', time: '2시간 전', reactions: [{ sender: 'wooyoung_j', emoji: '🔥' }] },
+                { id: 'sa2', author: 'san_choi', image: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=600', time: '어제', reactions: [] }
             ],
             posts: [
                 {
@@ -520,25 +526,25 @@
         let store = JSON.parse(localStorage.getItem('teezgram_v6_store')) || INITIAL_DATA;
         if (!store.storyArchive) {
             store.storyArchive = [
-                { id: 'sa_init', author: 'san_choi', image: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600', time: '최근 기록' }
+                { id: 'sa_init', author: 'san_choi', image: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600', time: '최근 기록', reactions: [] }
             ];
         }
 
         let activeTab = 'feed';
         let activeProfileId = 'san_choi';
         let currentDetailPostId = null;
-        let currentViewingStory = null;
-        let editingDmIndex = null;
-        let editingPostId = null;
-        let editingHighlightId = null;
-
-        let activeHighlightViewer = {
+        
+        let activeStoryViewer = {
             isHighlight: false,
             author: '',
-            images: [],
+            items: [], // { id, image, time, reactions }
             currentIndex: 0,
             title: ''
         };
+
+        let editingDmIndex = null;
+        let editingPostId = null;
+        let editingHighlightId = null;
 
         function saveStore() {
             localStorage.setItem('teezgram_v6_store', JSON.stringify(store));
@@ -816,10 +822,12 @@
                             </div>
                         ` : ''}
 
-                        <form onsubmit="handleAddComment(event, '${post.id}')" class="border-t border-gray-100 pt-2 mt-2 flex gap-2">
-                            <input type="text" placeholder="댓글 달기..." class="flex-1 text-xs focus:outline-none border rounded px-2 py-1">
-                            <button type="submit" class="text-xs font-semibold text-pink-600">게시</button>
-                        </form>
+                        ${store.isAdmin ? `
+                            <form onsubmit="handleAddComment(event, '${post.id}')" class="border-t border-gray-100 pt-2 mt-2 flex gap-2">
+                                <input type="text" placeholder="댓글 달기..." class="flex-1 text-xs focus:outline-none border rounded px-2 py-1">
+                                <button type="submit" class="text-xs font-semibold text-pink-600">게시</button>
+                            </form>
+                        ` : ''}
 
                         <div class="text-[10px] text-gray-400 uppercase pt-1">${post.time}</div>
                     </div>
@@ -904,15 +912,16 @@
             const container = document.getElementById('stories-container');
             container.innerHTML = '';
             Object.values(store.accounts).forEach(acc => {
-                const userStory = store.stories.find(s => s.author === acc.username);
+                const userStories = store.stories.filter(s => s.author === acc.username);
+                const hasStory = userStories.length > 0;
                 const div = document.createElement('div');
                 div.className = 'flex flex-col items-center space-y-1 cursor-pointer min-w-[64px]';
                 div.onclick = () => {
-                    if (userStory) openStoryViewer(userStory);
+                    if (hasStory) openStoryViewer(acc.username, userStories);
                     else viewProfile(acc.username);
                 };
                 div.innerHTML = `
-                    <div class="w-16 h-16 rounded-full p-[2px] ${userStory ? 'story-ring' : 'border border-gray-300'}">
+                    <div class="w-16 h-16 rounded-full p-[2px] ${hasStory ? 'story-ring' : 'border border-gray-300'}">
                         <img src="${acc.avatar}" class="w-full h-full object-cover rounded-full border-2 border-white">
                     </div>
                     <span class="text-xs text-gray-600 truncate w-16 text-center">${acc.username}</span>
@@ -921,97 +930,105 @@
             });
         }
 
-        function openStoryViewer(story) {
-            activeHighlightViewer = { isHighlight: false };
-            currentViewingStory = story;
-            const acc = store.accounts[story.author] || { username: story.author, avatar: '' };
-            document.getElementById('story-view-avatar').src = acc.avatar;
-            document.getElementById('story-view-username').innerText = acc.username;
-            document.getElementById('story-view-time').innerText = story.time;
-            document.getElementById('story-view-img').src = story.image;
-
-            document.getElementById('story-prev-btn').classList.add('hidden');
-            document.getElementById('story-next-btn').classList.add('hidden');
-            document.getElementById('story-pagination-badge').classList.add('hidden');
-
-            document.getElementById('story-reactions-display').style.display = 'flex';
-            document.getElementById('story-reactions-input-bar').style.display = 'flex';
-            renderStoryReactions();
-
+        function openStoryViewer(authorUsername, storiesArray, startIndex = 0) {
+            activeStoryViewer = {
+                isHighlight: false,
+                author: authorUsername,
+                items: storiesArray,
+                currentIndex: startIndex,
+                title: ''
+            };
+            updateStoryViewerScreen();
             document.getElementById('modal-story-viewer').classList.remove('hidden');
         }
 
         function openHighlightViewer(authorUsername, highlightObj) {
-            activeHighlightViewer = {
+            const items = highlightObj.images.map((imgUrl, i) => ({
+                id: highlightObj.id + '_' + i,
+                image: imgUrl,
+                time: '하이라이트',
+                reactions: highlightObj.reactions ? (highlightObj.reactions[i] || []) : []
+            }));
+
+            activeStoryViewer = {
                 isHighlight: true,
                 author: authorUsername,
-                images: highlightObj.images && highlightObj.images.length > 0 ? highlightObj.images : [highlightObj.cover],
+                items: items,
                 currentIndex: 0,
                 title: highlightObj.title
             };
 
-            updateHighlightViewerScreen();
+            updateStoryViewerScreen();
             document.getElementById('modal-story-viewer').classList.remove('hidden');
         }
 
-        function updateHighlightViewerScreen() {
-            const acc = store.accounts[activeHighlightViewer.author] || { username: activeHighlightViewer.author, avatar: '' };
+        function updateStoryViewerScreen() {
+            const acc = store.accounts[activeStoryViewer.author] || { username: activeStoryViewer.author, avatar: '' };
             document.getElementById('story-view-avatar').src = acc.avatar;
-            document.getElementById('story-view-username').innerText = acc.username + ' (' + activeHighlightViewer.title + ')';
-            document.getElementById('story-view-time').innerText = '하이라이트';
+            document.getElementById('story-view-username').innerText = acc.username + (activeStoryViewer.title ? ` (${activeStoryViewer.title})` : '');
             
-            const imgs = activeHighlightViewer.images;
-            const idx = activeHighlightViewer.currentIndex;
-            document.getElementById('story-view-img').src = imgs[idx];
+            const items = activeStoryViewer.items;
+            const idx = activeStoryViewer.currentIndex;
+            const currentItem = items[idx];
 
-            const prevBtn = document.getElementById('story-prev-btn');
-            const nextBtn = document.getElementById('story-next-btn');
-            const badge = document.getElementById('story-pagination-badge');
+            document.getElementById('story-view-time').innerText = currentItem.time;
+            document.getElementById('story-view-img').src = currentItem.image;
 
-            if (imgs.length > 1) {
-                prevBtn.classList.remove('hidden');
-                nextBtn.classList.remove('hidden');
-                badge.classList.remove('hidden');
-                badge.innerText = `${idx + 1} / ${imgs.length}`;
+            // 진행 바(인디케이터) 렌더링
+            const progressContainer = document.getElementById('story-progress-bars');
+            progressContainer.innerHTML = '';
+            items.forEach((_, i) => {
+                const bar = document.createElement('div');
+                bar.className = `flex-1 h-0.5 rounded-full ${i <= idx ? 'bg-white' : 'bg-white/40'}`;
+                progressContainer.appendChild(bar);
+            });
+
+            // 관리자 모드일 때 삭제 버튼 처리 (일반 스토리일 때만 삭제 가능)
+            const deleteBtn = document.getElementById('admin-story-delete-btn');
+            if (store.isAdmin && !activeStoryViewer.isHighlight) {
+                deleteBtn.classList.remove('hidden');
             } else {
-                prevBtn.classList.add('hidden');
-                nextBtn.classList.add('hidden');
-                badge.classList.add('hidden');
+                deleteBtn.classList.add('hidden');
             }
 
-            document.getElementById('story-reactions-display').style.display = 'none';
-            document.getElementById('story-reactions-input-bar').style.display = 'none';
+            const isHighlight = activeStoryViewer.isHighlight;
+            document.getElementById('story-reactions-display').style.display = isHighlight ? 'none' : 'flex';
+            document.getElementById('story-reactions-input-bar').style.display = isHighlight ? 'none' : 'flex';
+
+            if (!isHighlight) {
+                renderStoryReactions();
+            }
         }
 
         function slideStoryItem(direction) {
-            if (!activeHighlightViewer.isHighlight) return;
-            const imgs = activeHighlightViewer.images;
-            if (!imgs || imgs.length <= 1) return;
+            const items = activeStoryViewer.items;
+            if (!items || items.length <= 1) return;
 
-            let idx = activeHighlightViewer.currentIndex + direction;
-            if (idx < 0) idx = imgs.length - 1;
-            if (idx >= imgs.length) idx = 0;
+            let idx = activeStoryViewer.currentIndex + direction;
+            if (idx < 0) idx = items.length - 1;
+            if (idx >= items.length) idx = 0;
 
-            activeHighlightViewer.currentIndex = idx;
-            updateHighlightViewerScreen();
+            activeStoryViewer.currentIndex = idx;
+            updateStoryViewerScreen();
         }
 
         function openProfileStory() {
-            const userStory = store.stories.find(s => s.author === activeProfileId);
-            if (userStory) {
-                openStoryViewer(userStory);
+            const userStories = store.stories.filter(s => s.author === activeProfileId);
+            if (userStories.length > 0) {
+                openStoryViewer(activeProfileId, userStories);
             } else {
                 alert('등록된 스토리가 없습니다.');
             }
         }
 
         function renderStoryReactions() {
-            if (activeHighlightViewer.isHighlight) return;
-            if (!currentViewingStory) return;
+            if (activeStoryViewer.isHighlight) return;
+            const currentItem = activeStoryViewer.items[activeStoryViewer.currentIndex];
+            if (!currentItem) return;
 
             const avatarsContainer = document.getElementById('story-reactions-avatars');
             const summaryText = document.getElementById('story-reactions-summary-text');
-            const reactions = currentViewingStory.reactions || [];
+            const reactions = currentItem.reactions || [];
 
             avatarsContainer.innerHTML = '';
 
@@ -1037,9 +1054,10 @@
         }
 
         function openStoryReactionsDetailModal() {
-            if (activeHighlightViewer.isHighlight) return;
-            if (!currentViewingStory) return;
-            const reactions = currentViewingStory.reactions || [];
+            if (activeStoryViewer.isHighlight) return;
+            const currentItem = activeStoryViewer.items[activeStoryViewer.currentIndex];
+            if (!currentItem) return;
+            const reactions = currentItem.reactions || [];
             const listEl = document.getElementById('story-reactions-detail-list');
             listEl.innerHTML = '';
 
@@ -1064,11 +1082,12 @@
         }
 
         function sendStoryEmoji(emoji) {
-            if (activeHighlightViewer.isHighlight) return;
-            if (!currentViewingStory) return;
-            if (!currentViewingStory.reactions) currentViewingStory.reactions = [];
+            if (activeStoryViewer.isHighlight) return;
+            const currentItem = activeStoryViewer.items[activeStoryViewer.currentIndex];
+            if (!currentItem) return;
+            if (!currentItem.reactions) currentItem.reactions = [];
 
-            currentViewingStory.reactions.unshift({ sender: store.currentAccount, emoji });
+            currentItem.reactions.unshift({ sender: store.currentAccount, emoji });
             saveStore();
             renderStoryReactions();
 
@@ -1086,6 +1105,20 @@
             }, 1200);
         }
 
+        function handleDeleteCurrentStory() {
+            if (!store.isAdmin || activeStoryViewer.isHighlight) return;
+            if (!confirm('이 스토리를 삭제하시겠습니까?')) return;
+
+            const currentItem = activeStoryViewer.items[activeStoryViewer.currentIndex];
+            if (!currentItem) return;
+
+            store.stories = store.stories.filter(s => s.id !== currentItem.id);
+            saveStore();
+            closeModal('modal-story-viewer');
+            renderStories();
+            if (activeTab === 'profile') renderProfile(activeProfileId);
+        }
+
         function openNewStoryModal() {
             if (!store.isAdmin) return;
             document.getElementById('story-modal-title').innerText = '새 스토리 올리기';
@@ -1100,21 +1133,23 @@
             const fileInput = document.getElementById('story-image-file');
 
             const saveStoryObj = (imgUrl) => {
-                store.stories = store.stories.filter(s => s.author !== author);
-                store.stories.unshift({
+                const newStoryObj = {
                     id: 's_' + Date.now(),
                     author,
                     image: imgUrl,
                     time,
                     reactions: []
-                });
+                };
+
+                store.stories.unshift(newStoryObj);
 
                 if (!store.storyArchive) store.storyArchive = [];
                 store.storyArchive.unshift({
                     id: 'sa_' + Date.now(),
                     author,
                     image: imgUrl,
-                    time
+                    time,
+                    reactions: []
                 });
 
                 saveStore();
@@ -1158,8 +1193,8 @@
             const acc = store.accounts[username] || { username, fullName: username, avatar: '', bio: '', followers: [], following: [], highlights: [] };
             
             const avatarContainer = document.getElementById('profile-avatar-container');
-            const userStory = store.stories.find(s => s.author === username);
-            if (userStory) {
+            const userStories = store.stories.filter(s => s.author === username);
+            if (userStories.length > 0) {
                 avatarContainer.className = 'w-24 h-24 sm:w-36 sm:h-36 rounded-full p-1 story-ring cursor-pointer';
             } else {
                 avatarContainer.className = 'w-24 h-24 sm:w-36 sm:h-36 rounded-full p-1 border border-gray-300 cursor-pointer';
@@ -1230,7 +1265,7 @@
             document.getElementById('highlight-title-input').value = '';
             document.getElementById('highlight-current-section').classList.add('hidden');
             document.getElementById('highlight-delete-btn').classList.add('hidden');
-            renderArchivePicker([]);
+            renderArchivePicker([], []);
             document.getElementById('modal-highlight').classList.remove('hidden');
         }
 
@@ -1259,12 +1294,12 @@
                 currentGrid.appendChild(wrap);
             });
 
-            renderArchivePicker(currentImgs);
+            renderArchivePicker(currentImgs, h.reactions || []);
             document.getElementById('highlight-delete-btn').classList.remove('hidden');
             document.getElementById('modal-highlight').classList.remove('hidden');
         }
 
-        function renderArchivePicker(existingImages) {
+        function renderArchivePicker(existingImages, existingReactions) {
             const picker = document.getElementById('story-archive-picker');
             picker.innerHTML = '';
             const archiveList = store.storyArchive || [];
@@ -1274,13 +1309,13 @@
                 return;
             }
 
-            archiveList.forEach((item) => {
+            archiveList.forEach((item, index) => {
                 const isAlreadyIncluded = existingImages.includes(item.image);
                 const wrap = document.createElement('label');
                 wrap.className = `relative aspect-square rounded overflow-hidden border cursor-pointer block ${isAlreadyIncluded ? 'opacity-45' : 'hover:ring-2 hover:ring-pink-500'}`;
                 wrap.innerHTML = `
                     <img src="${item.image}" class="w-full h-full object-cover">
-                    <input type="checkbox" name="archive-story-chk" value="${item.image}" ${isAlreadyIncluded ? 'disabled' : ''} class="absolute top-1 left-1 rounded text-pink-600 focus:ring-pink-500">
+                    <input type="checkbox" name="archive-story-chk" value="${index}" ${isAlreadyIncluded ? 'disabled' : ''} class="absolute top-1 left-1 rounded text-pink-600 focus:ring-pink-500">
                     <div class="absolute bottom-0 inset-x-0 bg-black/50 text-white text-[9px] text-center truncate px-0.5">${item.time}</div>
                 `;
                 picker.appendChild(wrap);
@@ -1299,6 +1334,7 @@
             }
 
             h.images.splice(imgIdx, 1);
+            if (h.reactions && h.reactions[imgIdx]) h.reactions.splice(imgIdx, 1);
             h.cover = h.images[0];
             saveStore();
             openEditHighlightModal(highlightId);
@@ -1315,15 +1351,26 @@
 
             const title = document.getElementById('highlight-title-input').value.trim();
             const checkedCheckboxes = document.querySelectorAll('input[name="archive-story-chk"]:checked');
-            const selectedImages = Array.from(checkedCheckboxes).map(chk => chk.value);
+            
+            const selectedImages = [];
+            const selectedReactions = [];
+            checkedCheckboxes.forEach(chk => {
+                const archiveItem = store.storyArchive[parseInt(chk.value)];
+                if (archiveItem) {
+                    selectedImages.push(archiveItem.image);
+                    selectedReactions.push(archiveItem.reactions || []);
+                }
+            });
 
             if (editingHighlightId) {
                 const h = acc.highlights.find(item => item.id === editingHighlightId);
                 if (h) {
                     h.title = title;
                     if (!h.images) h.images = [h.cover];
+                    if (!h.reactions) h.reactions = [];
                     if (selectedImages.length > 0) {
                         h.images.push(...selectedImages);
+                        h.reactions.push(...selectedReactions);
                     }
                     if (h.images && h.images.length > 0) {
                         h.cover = h.images[0];
@@ -1331,11 +1378,13 @@
                 }
             } else {
                 const finalImgs = selectedImages.length > 0 ? selectedImages : ['https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600'];
+                const finalReactions = selectedReactions.length > 0 ? selectedReactions : [[]];
                 acc.highlights.push({
                     id: 'h_' + Date.now(),
                     title,
                     cover: finalImgs[0],
-                    images: finalImgs
+                    images: finalImgs,
+                    reactions: finalReactions
                 });
             }
 
@@ -1456,6 +1505,7 @@
 
         function handleAddComment(e, postId) {
             e.preventDefault();
+            if (!store.isAdmin) return;
             const input = e.target.querySelector('input');
             const text = input.value.trim();
             if (!text) return;
