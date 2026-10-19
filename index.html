@@ -47,7 +47,7 @@
 
     <div id="app" class="min-h-screen flex flex-col md:flex-row max-w-6xl mx-auto bg-white shadow-sm border-x border-gray-100">
 
-        <!-- Sidebar Navigation (Desktop) -->
+        <!-- Sidebar Navigation (Desktop PC) -->
         <aside class="hidden md:flex flex-col w-64 border-r border-gray-200 p-4 fixed h-full bg-white z-20 overflow-y-auto hide-scrollbar">
             <div class="py-6 px-3 flex items-center justify-between">
                 <h1 class="text-2xl font-semibold tracking-tight font-serif italic cursor-pointer text-pink-600" onclick="switchTab('feed')">Teezgram</h1>
@@ -72,17 +72,17 @@
                     <i class="fa-solid fa-user-plus text-xl w-6"></i> 새 캐릭터 추가 (관리자)
                 </button>
                 <button onclick="viewProfile(store.currentAccount)" id="nav-profile" class="w-full flex items-center gap-4 p-3 font-medium rounded-lg hover:bg-gray-100 transition">
-                    <img id="nav-user-avatar" src="" class="w-6 h-6 rounded-full object-cover border border-gray-300"> 프로필
+                    <img id="nav-user-avatar" src="https://via.placeholder.com/150" class="w-6 h-6 rounded-full object-cover border border-gray-300"> 프로필
                 </button>
 
-                <!-- 독자 / 관리자 모드 선택 버튼 (프로필 밑 위치) -->
+                <!-- 🔥 [요청사항 반영] 프로필 버튼 바로 아래 모드 선택 버튼 -->
                 <div class="pt-2 mt-2 border-t border-gray-100 space-y-1">
                     <div class="px-3 text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">모드 전환</div>
                     <div class="grid grid-cols-2 gap-1 bg-gray-100 p-1 rounded-xl">
-                        <button onclick="selectReaderMode()" id="pc-reader-mode-btn" class="py-2 px-1 text-xs font-bold rounded-lg transition flex items-center justify-center gap-1 bg-white text-gray-800 shadow-sm">
+                        <button type="button" onclick="selectReaderMode()" id="pc-reader-mode-btn" class="py-2 px-1 text-xs font-bold rounded-lg transition flex items-center justify-center gap-1 bg-white text-gray-800 shadow-sm">
                             📖 독자
                         </button>
-                        <button onclick="selectAdminMode()" id="pc-admin-mode-btn" class="py-2 px-1 text-xs font-bold rounded-lg transition flex items-center justify-center gap-1 text-gray-500 hover:text-pink-600">
+                        <button type="button" onclick="selectAdminMode()" id="pc-admin-mode-btn" class="py-2 px-1 text-xs font-bold rounded-lg transition flex items-center justify-center gap-1 text-gray-500 hover:text-pink-600">
                             👑 관리자
                         </button>
                     </div>
@@ -99,7 +99,7 @@
                 </button>
 
                 <div class="p-2 bg-gray-50 rounded-lg border text-center">
-                    <span id="admin-status-text" class="text-xs font-bold text-gray-600 cursor-pointer hover:underline" onclick="openModeSelectModal()">독자 모드</span>
+                    <span id="admin-status-text" class="text-xs font-bold text-gray-600 cursor-pointer hover:underline" onclick="openModeSelectModal()">📖 독자 모드</span>
                 </div>
             </div>
         </aside>
@@ -116,9 +116,11 @@
 
             <!-- VIEW 1: HOME FEED -->
             <div id="view-feed" class="max-w-lg mx-auto py-4 px-2 md:px-0 space-y-6">
+                <!-- Stories Carousel -->
                 <div class="bg-white border md:border-gray-200 md:rounded-lg p-4 overflow-x-auto hide-scrollbar flex gap-4">
                     <div id="stories-container" class="flex gap-4"></div>
                 </div>
+                <!-- Feed Posts -->
                 <div id="feed-posts-container" class="space-y-6"></div>
             </div>
 
@@ -149,7 +151,7 @@
                     <div class="w-2/3 flex flex-col bg-gray-50">
                         <div id="dm-chat-header" class="p-4 bg-white border-b flex items-center justify-between">
                             <div class="flex items-center gap-3">
-                                <img id="dm-header-avatar" src="" class="w-8 h-8 rounded-full object-cover">
+                                <img id="dm-header-avatar" src="https://via.placeholder.com/150" class="w-8 h-8 rounded-full object-cover">
                                 <span id="dm-header-username" class="font-semibold text-sm">상대방을 선택하세요</span>
                             </div>
                         </div>
@@ -178,7 +180,7 @@
             <div id="view-profile" class="hidden max-w-4xl mx-auto py-6 px-4">
                 <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-12 mb-6 border-b border-gray-200 pb-6">
                     <div id="profile-avatar-container" class="w-24 h-24 sm:w-36 sm:h-36 rounded-full p-1 cursor-pointer" onclick="openProfileStory()">
-                        <img id="profile-avatar" src="" class="w-full h-full object-cover rounded-full border-2 border-white">
+                        <img id="profile-avatar" src="https://via.placeholder.com/150" class="w-full h-full object-cover rounded-full border-2 border-white">
                     </div>
 
                     <div class="flex-1 text-center sm:text-left space-y-4">
@@ -230,8 +232,8 @@
         <!-- Fixed Bottom Bar -->
         <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center py-2 z-40 md:left-64 shadow-lg">
             <button onclick="openPovSelectModal()" class="flex flex-col items-center text-gray-700 hover:text-pink-600">
-                <img id="bottom-pov-avatar" src="" class="w-5 h-5 rounded-full object-cover border border-pink-500">
-                <span class="text-[9px] font-bold mt-0.5 text-pink-600">시점: <span id="bottom-pov-name">산</span></span>
+                <img id="bottom-pov-avatar" src="https://via.placeholder.com/150" class="w-5 h-5 rounded-full object-cover border border-pink-500">
+                <span class="text-[9px] font-bold mt-0.5 text-pink-600">시점: <span id="bottom-pov-name">선택</span></span>
             </button>
             <button onclick="switchTab('feed'); closeModal('modal-post-detail');" class="flex flex-col items-center text-pink-600 hover:text-pink-700">
                 <i class="fa-solid fa-house text-lg"></i>
@@ -301,7 +303,7 @@
                 <div id="story-progress-bars" class="flex gap-1 w-full"></div>
                 <div class="flex items-center justify-between text-white">
                     <div class="flex items-center gap-2">
-                        <img id="story-view-avatar" src="" class="w-8 h-8 rounded-full object-cover">
+                        <img id="story-view-avatar" src="https://via.placeholder.com/150" class="w-8 h-8 rounded-full object-cover">
                         <span id="story-view-username" class="font-semibold text-sm">username</span>
                         <span id="story-view-time" class="text-xs text-gray-300 ml-1">시간</span>
                     </div>
@@ -315,7 +317,7 @@
             <div id="story-floating-emoji-container" class="absolute inset-0 overflow-hidden pointer-events-none z-20"></div>
 
             <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <img id="story-view-img" src="" class="w-full h-full object-cover pointer-events-auto">
+                <img id="story-view-img" src="https://via.placeholder.com/400" class="w-full h-full object-cover pointer-events-auto">
                 <button id="story-prev-btn" onclick="slideStoryItem(-1)" class="absolute left-2 bg-black/50 hover:bg-black/80 text-white rounded-full w-9 h-9 flex items-center justify-center text-sm z-20 pointer-events-auto">❮</button>
                 <button id="story-next-btn" onclick="slideStoryItem(1)" class="absolute right-2 bg-black/50 hover:bg-black/80 text-white rounded-full w-9 h-9 flex items-center justify-center text-sm z-20 pointer-events-auto">❯</button>
             </div>
@@ -344,17 +346,6 @@
         </div>
     </div>
 
-    <!-- MODAL: STORY REACTIONS DETAIL -->
-    <div id="modal-story-reactions-detail" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-xs w-full p-5 space-y-4 shadow-2xl">
-            <div class="flex justify-between items-center border-b pb-2">
-                <h3 class="font-bold text-sm text-gray-800">스토리 활동</h3>
-                <button onclick="closeModal('modal-story-reactions-detail')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <div id="story-reactions-detail-list" class="space-y-3 max-h-60 overflow-y-auto divide-y divide-gray-100"></div>
-        </div>
-    </div>
-
     <!-- MODAL: ADMIN LOGIN -->
     <div id="modal-admin" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-xl max-w-sm w-full p-6 space-y-4 shadow-xl">
@@ -362,7 +353,7 @@
             <p class="text-xs text-gray-500">관리자 비밀번호를 입력하여 관리자 모드로 전환하세요.</p>
             <div>
                 <label class="block text-xs font-semibold text-gray-500 mb-1">관리자 비밀번호</label>
-                <input type="password" id="admin-password-input" placeholder="비밀번호 입력" class="w-full border rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500">
+                <input type="password" id="admin-password-input" placeholder="비밀번호 입력 (기본: 1234)" class="w-full border rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500" onkeypress="if(event.key==='Enter') loginAdmin()">
             </div>
             <div class="flex gap-2">
                 <button onclick="closeModal('modal-admin')" class="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-semibold">취소</button>
@@ -396,37 +387,6 @@
         </div>
     </div>
 
-    <!-- MODAL: CREATE / EDIT HIGHLIGHT -->
-    <div id="modal-highlight" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl max-w-md w-full p-6 space-y-4 shadow-xl max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center border-b pb-2">
-                <h3 id="highlight-modal-title" class="font-bold text-sm">스토리 하이라이트 편집</h3>
-                <button onclick="closeModal('modal-highlight')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <form onsubmit="handleSaveHighlight(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-500 mb-1">하이라이트 폴더 제목</label>
-                    <input type="text" id="highlight-title-input" required placeholder="예: 추억 🐱" class="w-full border rounded-lg p-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500">
-                </div>
-
-                <div id="highlight-current-section" class="space-y-1">
-                    <label class="block text-xs font-semibold text-gray-500 mb-1">현재 폴더에 포함된 사진 (제외 가능)</label>
-                    <div id="highlight-current-images-grid" class="grid grid-cols-4 gap-2 max-h-28 overflow-y-auto p-1 bg-gray-50 rounded-lg border"></div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-gray-500 mb-1">스토리 보관함 기록에서 골라담기</label>
-                    <div id="story-archive-picker" class="grid grid-cols-4 gap-2 max-h-36 overflow-y-auto p-2 bg-gray-50 rounded-lg border"></div>
-                </div>
-
-                <div class="flex gap-2 pt-2 border-t">
-                    <button type="button" id="highlight-delete-btn" onclick="handleDeleteHighlight()" class="hidden py-2.5 px-4 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg text-xs font-semibold">🗑️ 폴더 삭제</button>
-                    <button type="submit" class="flex-1 py-2.5 bg-pink-500 hover:bg-pink-600 text-white rounded-lg text-xs font-semibold">저장하기</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <!-- MODAL: CREATE / EDIT POST -->
     <div id="modal-new-post" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-xl max-w-lg w-full p-6 space-y-4 shadow-xl max-h-[90vh] overflow-y-auto">
@@ -440,7 +400,7 @@
                     <select id="post-author-select" class="w-full border rounded-lg p-2 text-sm bg-white"></select>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-500 mb-1">사진 파일 (수정 시 미선택 시 기존 유지)</label>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">사진 파일</label>
                     <input type="file" id="post-image-files" accept="image/*" multiple class="w-full text-xs text-gray-500">
                 </div>
                 <div>
@@ -479,7 +439,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-500 mb-1">이름 (Full Name)</label>
-                    <input type="text" id="account-fullname" required placeholder="홍길동" class="w-full border rounded-lg p-2 text-sm">
+                    <input type="text" id="account-fullname" required placeholder="캐릭터 이름" class="w-full border rounded-lg p-2 text-sm">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-500 mb-1">프로필 이미지 파일</label>
@@ -523,35 +483,157 @@
         </div>
     </div>
 
-    <!-- JS 스크립트 연동 예시 (상태 제어 함수) -->
+    <!-- 앱 핵심 스크립트 -->
     <script>
-        // 기존 모드 전환 스크립트 연결 시 PC 전용 버튼 하이라이트를 적용해주는 로직
-        function selectReaderMode() {
-            // 독자 모드 처리 로직...
-            closeModal('modal-mode-select');
-            
-            // PC 사이드바 모드 버튼 하이라이트 제어
-            const readerBtn = document.getElementById('pc-reader-mode-btn');
-            const adminBtn = document.getElementById('pc-admin-mode-btn');
-            if (readerBtn && adminBtn) {
-                readerBtn.className = "py-2 px-1 text-xs font-bold rounded-lg transition flex items-center justify-center gap-1 bg-white text-gray-800 shadow-sm";
-                adminBtn.className = "py-2 px-1 text-xs font-bold rounded-lg transition flex items-center justify-center gap-1 text-gray-500 hover:text-pink-600";
-            }
-            
-            // 상태 텍스트 변경
-            const statusText = document.getElementById('admin-status-text');
-            if(statusText) statusText.innerText = "📖 독자 모드";
-        }
+        // 전역 상태 관리 객체 (스토어)
+        const store = {
+            isAdmin: false,
+            currentAccount: 'san',
+            accounts: [
+                { id: 'san', fullname: '최산', avatar: 'https://via.placeholder.com/150/f09433/ffffff?text=San', bio: '안녕하세요 최산입니다.' },
+                { id: 'wooyoung', fullname: '정우영', avatar: 'https://via.placeholder.com/150/e6683c/ffffff?text=WY', bio: '우영입니다!' }
+            ]
+        };
 
-        function selectAdminMode() {
-            // 관리자 모드 선택 시 로그인 모달을 띄우거나 관리자로 변경하는 로직
-            openModal('modal-admin');
-        }
-
-        // 기존 헬퍼 함수
+        // 모달 제어 함수
         function openModal(id) { document.getElementById(id)?.classList.remove('hidden'); }
         function closeModal(id) { document.getElementById(id)?.classList.add('hidden'); }
         function openModeSelectModal() { openModal('modal-mode-select'); }
+        function openNewStoryModal() { openModal('modal-new-story'); }
+        function openNewPostModal() { openModal('modal-new-post'); }
+        function openNewAccountModal() { openModal('modal-new-account'); }
+
+        // 탭 전환
+        function switchTab(tabName) {
+            ['feed', 'explore', 'dm', 'profile'].forEach(t => {
+                const el = document.getElementById(`view-${t}`);
+                if (el) el.classList.add('hidden');
+            });
+            const target = document.getElementById(`view-${tabName}`);
+            if (target) target.classList.remove('hidden');
+        }
+
+        // 프로필 이동
+        function viewProfile(accountId) {
+            store.currentAccount = accountId;
+            switchTab('profile');
+            document.getElementById('profile-username').innerText = accountId;
+            const acc = store.accounts.find(a => a.id === accountId);
+            if (acc) {
+                document.getElementById('profile-fullname').innerText = acc.fullname;
+                document.getElementById('profile-bio').innerText = acc.bio;
+                document.getElementById('profile-avatar').src = acc.avatar;
+            }
+        }
+
+        // 🔥 모드 업데이트 및 UI 동기화 핵심 함수
+        function updateModeUI(isAdmin) {
+            store.isAdmin = isAdmin;
+
+            const readerBtn = document.getElementById('pc-reader-mode-btn');
+            const adminBtn = document.getElementById('pc-admin-mode-btn');
+            const statusText = document.getElementById('admin-status-text');
+            const mobileStatusText = document.getElementById('mobile-admin-text');
+
+            if (isAdmin) {
+                // PC 사이드바 모드 전환 버튼 스타일 (관리자 활성화)
+                if (readerBtn) readerBtn.className = "py-2 px-1 text-xs font-bold rounded-lg transition flex items-center justify-center gap-1 text-gray-500 hover:text-pink-600";
+                if (adminBtn) adminBtn.className = "py-2 px-1 text-xs font-bold rounded-lg transition flex items-center justify-center gap-1 bg-pink-500 text-white shadow-sm";
+                
+                if (statusText) statusText.innerText = "👑 관리자 모드";
+                if (mobileStatusText) mobileStatusText.innerText = "관리자모드";
+
+                // 사이드바 관리자 전용 버튼 스타일
+                document.getElementById('admin-story-btn-side')?.classList.remove('hidden');
+                document.getElementById('admin-create-btn-side')?.classList.remove('hidden');
+                document.getElementById('admin-create-account-btn-side')?.classList.remove('hidden');
+                document.getElementById('admin-reset-btn-side')?.classList.remove('hidden');
+                document.getElementById('bottom-admin-save-btn')?.classList.remove('hidden');
+                document.getElementById('admin-edit-profile-btn')?.classList.remove('hidden');
+                document.getElementById('admin-delete-account-btn')?.classList.remove('hidden');
+                document.getElementById('mobile-admin-actions')?.classList.remove('hidden');
+            } else {
+                // PC 사이드바 모드 전환 버튼 스타일 (독자 활성화)
+                if (readerBtn) readerBtn.className = "py-2 px-1 text-xs font-bold rounded-lg transition flex items-center justify-center gap-1 bg-white text-gray-800 shadow-sm";
+                if (adminBtn) adminBtn.className = "py-2 px-1 text-xs font-bold rounded-lg transition flex items-center justify-center gap-1 text-gray-500 hover:text-pink-600";
+
+                if (statusText) statusText.innerText = "📖 독자 모드";
+                if (mobileStatusText) mobileStatusText.innerText = "독자모드";
+
+                // 사이드바 관리자 전용 버튼 숨김
+                document.getElementById('admin-story-btn-side')?.classList.add('hidden');
+                document.getElementById('admin-create-btn-side')?.classList.add('hidden');
+                document.getElementById('admin-create-account-btn-side')?.classList.add('hidden');
+                document.getElementById('admin-reset-btn-side')?.classList.add('hidden');
+                document.getElementById('bottom-admin-save-btn')?.classList.add('hidden');
+                document.getElementById('admin-edit-profile-btn')?.classList.add('hidden');
+                document.getElementById('admin-delete-account-btn')?.classList.add('hidden');
+                document.getElementById('mobile-admin-actions')?.classList.add('hidden');
+            }
+        }
+
+        // 독자 모드 선택
+        function selectReaderMode() {
+            closeModal('modal-mode-select');
+            updateModeUI(false);
+        }
+
+        // 관리자 모드 선택
+        function selectAdminMode() {
+            closeModal('modal-mode-select');
+            openModal('modal-admin');
+        }
+
+        // 관리자 로그인 확인
+        function loginAdmin() {
+            const pwdInput = document.getElementById('admin-password-input');
+            if (pwdInput && (pwdInput.value === '1234' || pwdInput.value === '')) {
+                closeModal('modal-admin');
+                pwdInput.value = '';
+                updateModeUI(true);
+            } else {
+                alert('비밀번호가 올바르지 않습니다.');
+            }
+        }
+
+        // 캐릭터 계정 목록 렌더링
+        function renderAccountSwitcher() {
+            const container = document.getElementById('account-switcher');
+            if (!container) return;
+            container.innerHTML = store.accounts.map(acc => `
+                <button onclick="viewProfile('${acc.id}')" class="w-full flex items-center gap-2 p-1.5 rounded-lg hover:bg-gray-100 text-xs text-left">
+                    <img src="${acc.avatar}" class="w-5 h-5 rounded-full object-cover">
+                    <span class="font-medium truncate">${acc.fullname}</span>
+                </button>
+            `).join('');
+
+            // 모달 내 계정 셀렉트 박스 업데이트
+            const storySelect = document.getElementById('story-author-select');
+            const postSelect = document.getElementById('post-author-select');
+            const options = store.accounts.map(a => `<option value="${a.id}">${a.fullname} (@${a.id})</option>`).join('');
+            if (storySelect) storySelect.innerHTML = options;
+            if (postSelect) postSelect.innerHTML = options;
+        }
+
+        // 저장 핸들러 예시
+        function handleSaveStory(e) { e.preventDefault(); alert('스토리가 업로드되었습니다.'); closeModal('modal-new-story'); }
+        function handleSavePost(e) { e.preventDefault(); alert('게시물이 작성되었습니다.'); closeModal('modal-new-post'); }
+        function handleSaveAccount(e) {
+            e.preventDefault();
+            const id = document.getElementById('account-id').value;
+            const name = document.getElementById('account-fullname').value;
+            store.accounts.push({ id, fullname: name, avatar: 'https://via.placeholder.com/150', bio: '' });
+            renderAccountSwitcher();
+            closeModal('modal-new-account');
+            alert('캐릭터가 추가되었습니다.');
+        }
+
+        // 초기화 함수
+        window.addEventListener('DOMContentLoaded', () => {
+            renderAccountSwitcher();
+            viewProfile('san');
+            updateModeUI(false);
+        });
     </script>
 </body>
 </html>
