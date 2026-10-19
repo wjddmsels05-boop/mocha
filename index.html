@@ -44,7 +44,6 @@
     </style>
 </head>
 <body class="text-slate-800 antialiased selection:bg-pink-100 selection:text-pink-600">
-
     <div id="app" class="min-h-screen flex flex-col md:flex-row max-w-6xl mx-auto bg-white shadow-sm border-x border-gray-100">
 
         <!-- Sidebar Navigation (Desktop) -->
@@ -1100,7 +1099,6 @@
             }
         }
 
-        // 🗑️ 캐릭터 삭제 시 모든 연관 데이터(DM, 게시물, 스토리, 팔로우 등) 깔끔하게 정돈하는 함수
         function handleDeleteAccount() {
             if (!store.isAdmin) return;
             const usernames = Object.keys(store.accounts);
@@ -1118,12 +1116,10 @@
             store.stories = store.stories.filter(s => s.author !== targetUser);
             store.storyArchive = store.storyArchive.filter(sa => sa.author !== targetUser);
 
-            // DM 찌꺼기 및 관련 키 완벽 삭제
             Object.keys(store.dms).forEach(k => {
                 if (k.includes(targetUser)) delete store.dms[k];
             });
 
-            // 다른 계정들의 팔로우 목록에서도 제거
             Object.values(store.accounts).forEach(acc => {
                 if (acc.followers) acc.followers = acc.followers.filter(u => u !== targetUser);
                 if (acc.following) acc.following = acc.following.filter(u => u !== targetUser);
@@ -1196,6 +1192,13 @@
                     </div>
                 </article>
             `;
+        }
+
+        function formatMentionsAndTags(text) {
+            if (!text) return '';
+            return text
+                .replace(/@([a-zA-Z0-9_]+)/g, '<span class="text-pink-600 font-semibold cursor-pointer" onclick="viewProfile(\'$1\')">@$1</span>')
+                .replace(/#([a-zA-Z0-9가-힣_]+)/g, '<span class="text-sky-600 font-medium cursor-pointer" onclick="searchHashtag(\'$1\')">#$1</span>');
         }
 
         function slidePostImg(postId, direction) {
@@ -2053,51 +2056,50 @@
             const container = document.getElementById('account-switcher');
             const selectPost = document.getElementById('post-author-select');
             const selectStory = document.getElementById('story-author-select');
-            container.innerHTML = ''; selectPost.innerHTML = ''; selectStory.innerHTML = '';
+            if (container) container.innerHTML = '';
+            if (selectPost) selectPost.innerHTML = '';
+            if (selectStory) selectStory.innerHTML = '';
 
             Object.values(store.accounts).forEach(acc => {
-                const btn = document.createElement('button');
-                btn.className = `w-full flex items-center gap-2 p-2 rounded-lg text-left text-xs ${store.currentAccount === acc.username ? 'bg-pink-50 text-pink-600 font-semibold' : 'hover:bg-gray-50'}`;
-                btn.onclick = () => {
-                    store.currentAccount = acc.username;
-                    saveStore();
-                    renderAccountSwitcher();
-                    updatePovUI();
-                    if (activeTab === 'dm') renderDmView();
-                    if (activeTab === 'profile') renderProfile(activeProfileId);
-                };
-                btn.innerHTML = `<img src="${acc.avatar}" class="w-5 h-5 rounded-full object-cover"><span class="truncate">${acc.username}</span>`;
-                container.appendChild(btn);
+                const isSelected = store.currentAccount === acc.username;
+                
+                if (container) {
+                    const btn = document.createElement('button');
+                    btn.className = `w-full flex items-center gap-2 p-2 rounded-lg text-left text-xs transition ${isSelected ? 'bg-pink-50 font-bold text-pink-600' : 'hover:bg-gray-100 text-gray-700'}`;
+                    btn.onclick = () => {
+                        store.currentAccount = acc.username;
+                        saveStore();
+                        renderAccountSwitcher();
+                        updatePovUI();
+                        if (activeTab === 'dm') renderDmView();
+                    };
+                    btn.innerHTML = `
+                        <img src="${acc.avatar}" class="w-6 h-6 rounded-full object-cover">
+                        <span class="truncate flex-1">@${acc.username}</span>
+                        ${isSelected ? '<span class="text-[10px]">✓</span>' : ''}
+                    `;
+                    container.appendChild(btn);
+                }
 
-                const opt = `<option value="${acc.username}">@${acc.username} (${acc.fullName})</option>`;
-                selectPost.innerHTML += opt;
-                selectStory.innerHTML += opt;
+                if (selectPost) {
+                    const opt = document.createElement('option');
+                    opt.value = acc.username;
+                    opt.textContent = `@${acc.username} (${acc.fullName})`;
+                    selectPost.appendChild(opt);
+                }
+
+                if (selectStory) {
+                    const opt = document.createElement('option');
+                    opt.value = acc.username;
+                    opt.textContent = `@${acc.username} (${acc.fullName})`;
+                    selectStory.appendChild(opt);
+                }
             });
-
-            const cur = store.accounts[store.currentAccount] || Object.values(store.accounts)[0];
-            if (cur) {
-                document.getElementById('nav-user-avatar').src = cur.avatar;
-            }
         }
 
-        function formatMentionsAndTags(text) {
-            if (!text) return '';
-            return text
-                .replace(/@([a-zA-Z0-9_]+)/g, '<span class="text-pink-600 font-semibold cursor-pointer hover:underline" onclick="event.stopPropagation(); closeModal(\'modal-post-detail\'); viewProfile(\'$1\')">@$1</span>')
-                .replace(/#([가-힣a-zA-Z0-9_]+)/g, '<span class="text-pink-600 font-semibold cursor-pointer hover:underline" onclick="event.stopPropagation(); searchHashtag(\'$1\')">#$1</span>');
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
         }
-
-        function searchHashtag(tag) {
-            closeModal('modal-post-detail');
-            switchTab('explore');
-            const searchInput = document.getElementById('explore-search-input');
-            if (searchInput) {
-                searchInput.value = '#' + tag;
-                filterExplore();
-            }
-        }
-
-        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
     </script>
 </body>
 </html>
