@@ -209,15 +209,9 @@
         </div>
     </div>
 
-    <!-- FULL FEED SCROLL MODAL -->
-    <div id="modal-post-detail" class="hidden fixed inset-0 bg-black/80 z-50 overflow-y-auto pb-20">
+    <!-- FULL FEED SCROLL MODAL (닫기 버튼 없음, 배경 클릭 시 닫힘) -->
+    <div id="modal-post-detail" onclick="handleOutsideClick(event)" class="hidden fixed inset-0 bg-black/80 z-50 overflow-y-auto pb-20">
         <div class="max-w-lg mx-auto py-6 px-2">
-            <div class="flex justify-between items-center text-white mb-4 px-2">
-                <span class="font-bold text-lg">피드 목록</span>
-                <button onclick="closeModal('modal-post-detail')" class="bg-gray-800 text-white px-3 py-1 rounded-full text-xs hover:bg-gray-700">
-                    <i class="fa-solid fa-xmark"></i> 닫기
-                </button>
-            </div>
             <div id="modal-feed-scroll-container" class="space-y-6"></div>
         </div>
     </div>
@@ -526,6 +520,7 @@
             }
             if (activeTab === 'feed') renderFeed();
             if (activeTab === 'profile') renderProfile(activeProfileId);
+            if (activeTab === 'dm') renderDmView();
         }
 
         function switchTab(tab) {
@@ -545,7 +540,7 @@
             window.scrollTo(0,0);
         }
 
-        // DM VIEW RENDERING
+        // DM VIEW RENDERING (관리자 모드에서만 수정 버튼 노출)
         function getDmKey(u1, u2) {
             return [u1, u2].sort().join('_');
         }
@@ -611,9 +606,11 @@
                         <div class="px-3.5 py-2 rounded-2xl text-xs ${isMe ? 'bg-pink-500 text-white rounded-br-none' : 'bg-white border border-gray-200 text-gray-800 rounded-bl-none'} shadow-sm">
                             ${msg.text}
                         </div>
-                        <button onclick="openEditDmModal(${idx})" class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-gray-600 text-[10px] p-1 transition">
-                            <i class="fa-solid fa-pen"></i>
-                        </button>
+                        ${store.isAdmin ? `
+                            <button onclick="openEditDmModal(${idx})" class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-gray-600 text-[10px] p-1 transition">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                        ` : ''}
                     </div>
                     <span class="text-[9px] text-gray-400 mt-1 px-1">${msg.time}</span>
                 `;
@@ -646,6 +643,7 @@
         }
 
         function openEditDmModal(index) {
+            if (!store.isAdmin) return;
             const key = getDmKey(store.currentAccount, store.activeDmTarget);
             const msg = store.dms[key][index];
             if (!msg) return;
@@ -658,6 +656,7 @@
 
         function handleSaveEditDm(e) {
             e.preventDefault();
+            if (!store.isAdmin) return;
             if (editingDmIndex === null || !store.activeDmTarget) return;
 
             const key = getDmKey(store.currentAccount, store.activeDmTarget);
@@ -674,6 +673,7 @@
         }
 
         function handleDeleteDmMsg() {
+            if (!store.isAdmin) return;
             if (editingDmIndex === null || !store.activeDmTarget) return;
             if (!confirm('이 메시지를 삭제하시겠습니까?')) return;
 
@@ -767,6 +767,13 @@
         function renderScrollFeedModal() {
             const container = document.getElementById('modal-feed-scroll-container');
             container.innerHTML = store.posts.map(post => buildPostCardHTML(post)).join('');
+        }
+
+        // 모달 바깥 빈 곳(검은 배경) 클릭 시 닫기
+        function handleOutsideClick(event) {
+            if (event.target.id === 'modal-post-detail') {
+                closeModal('modal-post-detail');
+            }
         }
 
         function renderExploreGrid() {
@@ -866,6 +873,7 @@
 
         function handleSaveStory(e) {
             e.preventDefault();
+            if (!store.isAdmin) return;
             const author = document.getElementById('story-author-select').value;
             const time = document.getElementById('story-time-input').value.trim() || '방금 전';
             const fileInput = document.getElementById('story-image-file');
@@ -993,6 +1001,7 @@
 
         function handleSavePost(e) {
             e.preventDefault();
+            if (!store.isAdmin) return;
             const author = document.getElementById('post-author-select').value;
             const caption = document.getElementById('post-caption').value.trim();
             const likes = parseInt(document.getElementById('post-likes').value) || 100;
@@ -1049,6 +1058,7 @@
         }
 
         function handleDeletePost() {
+            if (!store.isAdmin) return;
             if (!editingPostId) return;
             if (!confirm('이 피드를 삭제하시겠습니까?')) return;
 
@@ -1096,6 +1106,7 @@
 
         function handleCreateAccount(e) {
             e.preventDefault();
+            if (!store.isAdmin) return;
             const username = document.getElementById('new-acc-username').value.trim();
             const fullName = document.getElementById('new-acc-fullname').value.trim();
             const bio = document.getElementById('new-acc-bio').value.trim();
