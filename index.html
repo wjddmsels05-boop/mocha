@@ -140,7 +140,7 @@
             <!-- VIEW 4: PROFILE -->
             <div id="view-profile" class="hidden max-w-4xl mx-auto py-6 px-4">
                 <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-12 mb-6 border-b border-gray-200 pb-6">
-                    <div class="w-24 h-24 sm:w-36 sm:h-36 rounded-full p-1 story-ring cursor-pointer" onclick="openProfileStory()">
+                    <div id="profile-avatar-container" class="w-24 h-24 sm:w-36 sm:h-36 rounded-full p-1 cursor-pointer" onclick="openProfileStory()">
                         <img id="profile-avatar" src="" class="w-full h-full object-cover rounded-full border-2 border-white">
                     </div>
 
@@ -168,6 +168,11 @@
                             <div id="profile-bio" class="whitespace-pre-line text-gray-700">Bio content...</div>
                         </div>
                     </div>
+                </div>
+
+                <!-- Story Highlights Bar -->
+                <div class="mb-6 overflow-x-auto hide-scrollbar">
+                    <div class="flex gap-6 px-2" id="profile-highlights-container"></div>
                 </div>
 
                 <div id="profile-posts-grid" class="grid grid-cols-3 gap-1 sm:gap-4"></div>
@@ -293,7 +298,7 @@
     <div id="modal-new-post" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-xl max-w-lg w-full p-6 space-y-4 shadow-xl max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b pb-3">
-                <h3 id="post-modal-title" class="font-bold">새 피드 올리기 (여러 장 가능)</h3>
+                <h3 id="post-modal-title" class="font-bold">피드 올리기 / 수정</h3>
                 <button onclick="closeModal('modal-new-post')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             <form onsubmit="handleSavePost(event)" class="space-y-4">
@@ -302,7 +307,7 @@
                     <select id="post-author-select" class="w-full border rounded-lg p-2 text-sm bg-white"></select>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-500 mb-1">사진 여러 장 선택</label>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">사진 파일 (수정 시 미선택 시 기존 유지)</label>
                     <input type="file" id="post-image-files" accept="image/*" multiple class="w-full text-xs text-gray-500">
                 </div>
                 <div>
@@ -319,7 +324,10 @@
                         <input type="text" id="post-time" value="방금 전" class="w-full border rounded-lg p-2 text-sm">
                     </div>
                 </div>
-                <button type="submit" class="w-full py-2.5 bg-pink-600 text-white rounded-lg font-semibold">게시물 저장</button>
+                <div class="flex gap-2">
+                    <button type="button" id="post-delete-btn" onclick="handleDeletePost()" class="hidden py-2.5 px-4 bg-red-100 text-red-600 rounded-lg font-semibold text-sm">삭제</button>
+                    <button type="submit" class="flex-1 py-2.5 bg-pink-600 text-white rounded-lg font-semibold text-sm">게시물 저장</button>
+                </div>
             </form>
         </div>
     </div>
@@ -353,6 +361,30 @@
         </div>
     </div>
 
+    <!-- MODAL: EDIT DM MESSAGE -->
+    <div id="modal-edit-dm" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-sm w-full p-5 space-y-4 shadow-xl">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-sm">DM 메시지 수정</h3>
+                <button onclick="closeModal('modal-edit-dm')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form onsubmit="handleSaveEditDm(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">메시지 내용</label>
+                    <input type="text" id="edit-dm-text" required class="w-full border rounded-lg p-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">보낸 시간 표기</label>
+                    <input type="text" id="edit-dm-time" required class="w-full border rounded-lg p-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500">
+                </div>
+                <div class="flex gap-2 pt-1">
+                    <button type="button" onclick="handleDeleteDmMsg()" class="py-2 px-3 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg text-xs font-semibold">🗑️ 삭제</button>
+                    <button type="submit" class="flex-1 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded-lg text-xs font-semibold">수정 저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         const INITIAL_DATA = {
             isAdmin: false,
@@ -366,7 +398,11 @@
                     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
                     bio: 'ATEEZ / 🐱 산덕이\n"기억은 계절을 타고 흐른다."',
                     followers: ['wooyoung_j'],
-                    following: ['wooyoung_j']
+                    following: ['wooyoung_j'],
+                    highlights: [
+                        { id: 'h1', title: '추억 🐱', cover: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150' },
+                        { id: 'h2', title: '일상 ☕', cover: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=150' }
+                    ]
                 },
                 'wooyoung_j': {
                     username: 'wooyoung_j',
@@ -374,7 +410,10 @@
                     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
                     bio: 'ATEEZ / 🐈‍⬛ 우요냥\nMain Dancer. @san_choi',
                     followers: ['san_choi'],
-                    following: ['san_choi']
+                    following: ['san_choi'],
+                    highlights: [
+                        { id: 'h3', title: 'Dance 💃', cover: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150' }
+                    ]
                 }
             },
             stories: [
@@ -415,6 +454,8 @@
         let activeProfileId = 'san_choi';
         let currentDetailPostId = null;
         let currentViewingStory = null;
+        let editingDmIndex = null;
+        let editingPostId = null;
 
         function saveStore() {
             localStorage.setItem('teezgram_v6_store', JSON.stringify(store));
@@ -483,6 +524,8 @@
                 if(statusText) statusText.innerText = '📖 독자 모드 중';
                 if(mobileText) mobileText.innerText = '독자모드';
             }
+            if (activeTab === 'feed') renderFeed();
+            if (activeTab === 'profile') renderProfile(activeProfileId);
         }
 
         function switchTab(tab) {
@@ -559,13 +602,18 @@
             const key = getDmKey(store.currentAccount, targetUsername);
             const chatHistory = store.dms[key] || [];
 
-            chatHistory.forEach(msg => {
+            chatHistory.forEach((msg, idx) => {
                 const isMe = msg.sender === store.currentAccount;
                 const div = document.createElement('div');
-                div.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'}`;
+                div.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} group`;
                 div.innerHTML = `
-                    <div class="max-w-[75%] px-3.5 py-2 rounded-2xl text-xs ${isMe ? 'bg-pink-500 text-white rounded-br-none' : 'bg-white border border-gray-200 text-gray-800 rounded-bl-none'} shadow-sm">
-                        ${msg.text}
+                    <div class="flex items-center gap-1.5 max-w-[85%] ${isMe ? 'flex-row-reverse' : 'flex-row'}">
+                        <div class="px-3.5 py-2 rounded-2xl text-xs ${isMe ? 'bg-pink-500 text-white rounded-br-none' : 'bg-white border border-gray-200 text-gray-800 rounded-bl-none'} shadow-sm">
+                            ${msg.text}
+                        </div>
+                        <button onclick="openEditDmModal(${idx})" class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-gray-600 text-[10px] p-1 transition">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
                     </div>
                     <span class="text-[9px] text-gray-400 mt-1 px-1">${msg.time}</span>
                 `;
@@ -597,6 +645,47 @@
             renderDmView();
         }
 
+        function openEditDmModal(index) {
+            const key = getDmKey(store.currentAccount, store.activeDmTarget);
+            const msg = store.dms[key][index];
+            if (!msg) return;
+
+            editingDmIndex = index;
+            document.getElementById('edit-dm-text').value = msg.text;
+            document.getElementById('edit-dm-time').value = msg.time;
+            document.getElementById('modal-edit-dm').classList.remove('hidden');
+        }
+
+        function handleSaveEditDm(e) {
+            e.preventDefault();
+            if (editingDmIndex === null || !store.activeDmTarget) return;
+
+            const key = getDmKey(store.currentAccount, store.activeDmTarget);
+            const text = document.getElementById('edit-dm-text').value.trim();
+            const time = document.getElementById('edit-dm-time').value.trim();
+
+            if (store.dms[key] && store.dms[key][editingDmIndex]) {
+                store.dms[key][editingDmIndex].text = text;
+                store.dms[key][editingDmIndex].time = time;
+                saveStore();
+                renderDmView();
+                closeModal('modal-edit-dm');
+            }
+        }
+
+        function handleDeleteDmMsg() {
+            if (editingDmIndex === null || !store.activeDmTarget) return;
+            if (!confirm('이 메시지를 삭제하시겠습니까?')) return;
+
+            const key = getDmKey(store.currentAccount, store.activeDmTarget);
+            if (store.dms[key]) {
+                store.dms[key].splice(editingDmIndex, 1);
+                saveStore();
+                renderDmView();
+                closeModal('modal-edit-dm');
+            }
+        }
+
         function buildPostCardHTML(post) {
             const authorAcc = store.accounts[post.author] || { username: post.author, avatar: '' };
             const images = post.images || [post.image];
@@ -609,6 +698,11 @@
                             <img src="${authorAcc.avatar}" class="w-8 h-8 rounded-full object-cover">
                             <span class="font-semibold text-sm hover:underline">${authorAcc.username}</span>
                         </div>
+                        ${store.isAdmin ? `
+                            <button onclick="openEditPostModal('${post.id}')" class="text-gray-400 hover:text-gray-600 text-sm px-2">
+                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                            </button>
+                        ` : ''}
                     </div>
 
                     <div class="relative bg-black flex items-center justify-center max-h-[500px]">
@@ -739,6 +833,15 @@
             document.getElementById('modal-story-viewer').classList.remove('hidden');
         }
 
+        function openProfileStory() {
+            const userStory = store.stories.find(s => s.author === activeProfileId);
+            if (userStory) {
+                openStoryViewer(userStory);
+            } else {
+                alert('등록된 스토리가 없습니다.');
+            }
+        }
+
         function renderStoryReactions() {
             if (!currentViewingStory) return;
             const container = document.getElementById('story-reactions-display');
@@ -753,6 +856,42 @@
             currentViewingStory.reactions.unshift({ sender: store.currentAccount, emoji });
             saveStore();
             renderStoryReactions();
+        }
+
+        function openNewStoryModal() {
+            if (!store.isAdmin) return;
+            document.getElementById('story-modal-title').innerText = '새 스토리 올리기';
+            document.getElementById('modal-new-story').classList.remove('hidden');
+        }
+
+        function handleSaveStory(e) {
+            e.preventDefault();
+            const author = document.getElementById('story-author-select').value;
+            const time = document.getElementById('story-time-input').value.trim() || '방금 전';
+            const fileInput = document.getElementById('story-image-file');
+
+            const saveStoryObj = (imgUrl) => {
+                store.stories = store.stories.filter(s => s.author !== author);
+                store.stories.unshift({
+                    id: 's_' + Date.now(),
+                    author,
+                    image: imgUrl,
+                    time,
+                    reactions: []
+                });
+                saveStore();
+                renderStories();
+                if (activeTab === 'profile') renderProfile(activeProfileId);
+                closeModal('modal-new-story');
+            };
+
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => saveStoryObj(e.target.result);
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                saveStoryObj('https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600');
+            }
         }
 
         function handleToggleFollow() {
@@ -778,7 +917,16 @@
         function viewProfile(username) { activeProfileId = username; switchTab('profile'); }
 
         function renderProfile(username) {
-            const acc = store.accounts[username] || { username, fullName: username, avatar: '', bio: '', followers: [], following: [] };
+            const acc = store.accounts[username] || { username, fullName: username, avatar: '', bio: '', followers: [], following: [], highlights: [] };
+            
+            const avatarContainer = document.getElementById('profile-avatar-container');
+            const userStory = store.stories.find(s => s.author === username);
+            if (userStory) {
+                avatarContainer.className = 'w-24 h-24 sm:w-36 sm:h-36 rounded-full p-1 story-ring cursor-pointer';
+            } else {
+                avatarContainer.className = 'w-24 h-24 sm:w-36 sm:h-36 rounded-full p-1 border border-gray-300 cursor-pointer';
+            }
+
             document.getElementById('profile-avatar').src = acc.avatar;
             document.getElementById('profile-username').innerText = acc.username;
             document.getElementById('profile-fullname').innerText = acc.fullName;
@@ -788,6 +936,22 @@
             document.getElementById('profile-posts-count').innerText = userPosts.length;
             document.getElementById('profile-followers-count').innerText = acc.followers ? acc.followers.length : 0;
             document.getElementById('profile-following-count').innerText = acc.following ? acc.following.length : 0;
+
+            // Render Highlights
+            const highlightsContainer = document.getElementById('profile-highlights-container');
+            highlightsContainer.innerHTML = '';
+            const highlights = acc.highlights || [];
+            highlights.forEach(h => {
+                const item = document.createElement('div');
+                item.className = 'flex flex-col items-center space-y-1 cursor-pointer min-w-[64px]';
+                item.innerHTML = `
+                    <div class="w-14 h-14 rounded-full p-[2px] border-2 border-gray-200">
+                        <img src="${h.cover}" class="w-full h-full object-cover rounded-full">
+                    </div>
+                    <span class="text-[11px] text-gray-600 truncate w-14 text-center">${h.title}</span>
+                `;
+                highlightsContainer.appendChild(item);
+            });
 
             const grid = document.getElementById('profile-posts-grid');
             grid.innerHTML = '';
@@ -803,7 +967,27 @@
 
         function openNewPostModal() {
             if (!store.isAdmin) return;
+            editingPostId = null;
             document.getElementById('post-modal-title').innerText = '새 피드 올리기 (여러 장 가능)';
+            document.getElementById('post-caption').value = '';
+            document.getElementById('post-likes').value = 124;
+            document.getElementById('post-time').value = '방금 전';
+            document.getElementById('post-delete-btn').classList.add('hidden');
+            document.getElementById('modal-new-post').classList.remove('hidden');
+        }
+
+        function openEditPostModal(postId) {
+            if (!store.isAdmin) return;
+            const post = store.posts.find(p => p.id === postId);
+            if (!post) return;
+
+            editingPostId = postId;
+            document.getElementById('post-modal-title').innerText = '피드 수정';
+            document.getElementById('post-author-select').value = post.author;
+            document.getElementById('post-caption').value = post.caption;
+            document.getElementById('post-likes').value = post.likes;
+            document.getElementById('post-time').value = post.time;
+            document.getElementById('post-delete-btn').classList.remove('hidden');
             document.getElementById('modal-new-post').classList.remove('hidden');
         }
 
@@ -825,12 +1009,24 @@
                 }));
             };
 
-            if (fileInput.files && fileInput.files.length > 0) {
-                readMultipleFiles(fileInput.files).then(images => {
+            const processSave = (newImages) => {
+                if (editingPostId) {
+                    const post = store.posts.find(p => p.id === editingPostId);
+                    if (post) {
+                        post.author = author;
+                        post.caption = caption;
+                        post.likes = likes;
+                        post.time = time;
+                        if (newImages && newImages.length > 0) {
+                            post.images = newImages;
+                            post.activeImgIdx = 0;
+                        }
+                    }
+                } else {
                     store.posts.unshift({
                         id: 'p_' + Date.now(),
                         author,
-                        images,
+                        images: (newImages && newImages.length > 0) ? newImages : ['https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600'],
                         activeImgIdx: 0,
                         caption,
                         likes,
@@ -838,26 +1034,29 @@
                         time,
                         comments: []
                     });
-                    saveStore();
-                    closeModal('modal-new-post');
-                    switchTab('feed');
-                });
-            } else {
-                store.posts.unshift({
-                    id: 'p_' + Date.now(),
-                    author,
-                    images: ['https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600'],
-                    activeImgIdx: 0,
-                    caption,
-                    likes,
-                    likedByMe: false,
-                    time,
-                    comments: []
-                });
+                }
                 saveStore();
                 closeModal('modal-new-post');
-                switchTab('feed');
+                renderFeed();
+                if (activeTab === 'profile') renderProfile(activeProfileId);
+            };
+
+            if (fileInput.files && fileInput.files.length > 0) {
+                readMultipleFiles(fileInput.files).then(images => processSave(images));
+            } else {
+                processSave(null);
             }
+        }
+
+        function handleDeletePost() {
+            if (!editingPostId) return;
+            if (!confirm('이 피드를 삭제하시겠습니까?')) return;
+
+            store.posts = store.posts.filter(p => p.id !== editingPostId);
+            saveStore();
+            closeModal('modal-new-post');
+            renderFeed();
+            if (activeTab === 'profile') renderProfile(activeProfileId);
         }
 
         function handleAddComment(e, postId) {
@@ -914,7 +1113,8 @@
                     avatar: avatarUrl,
                     bio,
                     followers: [],
-                    following: []
+                    following: [],
+                    highlights: []
                 };
                 saveStore();
                 renderAccountSwitcher();
