@@ -45,7 +45,7 @@
 </head>
 <body class="text-slate-800 antialiased selection:bg-pink-100 selection:text-pink-600">
 
-    <div id="app" class="min-h-screen flex flex-col md:flex-row max-w-6xl mx-auto bg-white shadow-sm border-x border-gray-100 pb-24 md:pb-0">
+    <div id="app" class="min-h-screen flex flex-col md:flex-row max-w-6xl mx-auto bg-white shadow-sm border-x border-gray-100">
 
         <!-- Sidebar Navigation (Desktop) -->
         <aside class="hidden md:flex flex-col w-64 border-r border-gray-200 p-4 fixed h-full bg-white z-20">
@@ -87,7 +87,7 @@
         </aside>
 
         <!-- Main Content Area -->
-        <main class="flex-1 md:ml-64 min-h-screen">
+        <main class="flex-1 md:ml-64 pb-20 md:pb-0 min-h-screen">
             <header class="md:hidden sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex justify-between items-center z-30">
                 <h1 class="text-xl font-bold font-serif italic text-pink-600 cursor-pointer" onclick="switchTab('feed')">Teezgram</h1>
                 <div class="flex items-center gap-2">
@@ -211,32 +211,24 @@
         </main>
 
         <!-- Fixed Bottom Bar -->
-        <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40 md:left-64 shadow-lg flex flex-col">
-            <!-- 관리자 모드 전용 하단 데이터 백업/복원 바 -->
-            <div id="bottom-admin-sync-bar" class="hidden bg-pink-50 border-b border-pink-100 px-3 py-1.5 flex items-center justify-between text-xs">
-                <span class="font-bold text-pink-600 text-[11px]">📁 관리자 데이터 저장</span>
-                <div class="flex gap-1.5">
-                    <button onclick="exportDataJson()" class="px-2.5 py-1 bg-white border border-pink-300 text-pink-600 font-bold rounded shadow-sm hover:bg-pink-100 transition">내보내기</button>
-                    <label class="px-2.5 py-1 bg-pink-500 text-white font-bold rounded shadow-sm cursor-pointer hover:bg-pink-600 transition">
-                        가져오기 <input type="file" accept=".json" onchange="importDataJson(event)" class="hidden">
-                    </label>
-                </div>
-            </div>
-            
-            <div class="flex justify-around items-center py-2 bg-white">
-                <button onclick="openPovSelectModal()" class="flex flex-col items-center text-gray-700 hover:text-pink-600">
-                    <img id="bottom-pov-avatar" src="" class="w-5 h-5 rounded-full object-cover border border-pink-500">
-                    <span class="text-[9px] font-bold mt-0.5 text-pink-600">시점: <span id="bottom-pov-name">산</span></span>
-                </button>
-                <button onclick="switchTab('feed'); closeModal('modal-post-detail');" class="flex flex-col items-center text-pink-600 hover:text-pink-700">
-                    <i class="fa-solid fa-house text-lg"></i>
-                    <span class="text-[10px] font-bold mt-0.5">홈</span>
-                </button>
-                <button onclick="switchTab('explore'); closeModal('modal-post-detail');" class="flex flex-col items-center text-gray-700 hover:text-pink-600">
-                    <i class="fa-solid fa-compass text-lg"></i>
-                    <span class="text-[10px] font-medium mt-0.5">탐색</span>
-                </button>
-            </div>
+        <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center py-2 z-40 md:left-64 shadow-lg">
+            <button onclick="openPovSelectModal()" class="flex flex-col items-center text-gray-700 hover:text-pink-600">
+                <img id="bottom-pov-avatar" src="" class="w-5 h-5 rounded-full object-cover border border-pink-500">
+                <span class="text-[9px] font-bold mt-0.5 text-pink-600">시점: <span id="bottom-pov-name">산</span></span>
+            </button>
+            <button onclick="switchTab('feed'); closeModal('modal-post-detail');" class="flex flex-col items-center text-pink-600 hover:text-pink-700">
+                <i class="fa-solid fa-house text-lg"></i>
+                <span class="text-[10px] font-bold mt-0.5">홈</span>
+            </button>
+            <button onclick="switchTab('explore'); closeModal('modal-post-detail');" class="flex flex-col items-center text-gray-700 hover:text-pink-600">
+                <i class="fa-solid fa-compass text-lg"></i>
+                <span class="text-[10px] font-medium mt-0.5">탐색</span>
+            </button>
+            <!-- 관리자 모드 전용 하단 데이터 저장 버튼 (관리자일 때만 노출) -->
+            <button id="bottom-admin-save-btn" onclick="exportDataJson()" class="hidden flex flex-col items-center text-pink-600 hover:text-pink-700">
+                <i class="fa-solid fa-download text-lg"></i>
+                <span class="text-[10px] font-bold mt-0.5">데이터저장</span>
+            </button>
         </nav>
     </div>
 
@@ -765,7 +757,8 @@
             const adminBtns = [
                 'admin-create-btn-side', 'admin-create-btn-top',
                 'admin-create-account-btn-side', 'admin-story-btn-side', 
-                'admin-edit-profile-btn', 'admin-delete-account-btn'
+                'admin-edit-profile-btn', 'admin-delete-account-btn',
+                'bottom-admin-save-btn'
             ];
             adminBtns.forEach(id => {
                 const el = document.getElementById(id);
@@ -775,11 +768,6 @@
             const mobileActions = document.getElementById('mobile-admin-actions');
             if (mobileActions) {
                 mobileActions.classList.toggle('hidden', !store.isAdmin);
-            }
-
-            const bottomAdminSyncBar = document.getElementById('bottom-admin-sync-bar');
-            if (bottomAdminSyncBar) {
-                bottomAdminSyncBar.classList.toggle('hidden', !store.isAdmin);
             }
 
             const statusText = document.getElementById('admin-status-text');
@@ -1252,27 +1240,25 @@
         function renderExploreGrid() {
             const container = document.getElementById('explore-grid-container');
             container.innerHTML = '';
-            
-            const query = document.getElementById('explore-search-input').value.toLowerCase().trim();
-
             store.posts.forEach(item => {
-                // 검색어나 해시태그 일치 여부 확인
-                const textToCheck = (item.caption + ' ' + item.author).toLowerCase();
-                const matches = query === '' || textToCheck.includes(query);
-
-                if (matches) {
-                    const el = document.createElement('div');
-                    el.className = 'relative group cursor-pointer overflow-hidden bg-gray-200 aspect-square';
-                    const firstImg = item.images ? item.images[0] : item.image;
-                    el.innerHTML = `<img src="${firstImg}" class="w-full h-full object-cover">`;
-                    el.onclick = () => openPostDetailModal(item.id);
-                    container.appendChild(el);
-                }
+                const el = document.createElement('div');
+                el.className = 'relative group cursor-pointer overflow-hidden bg-gray-200 aspect-square';
+                const firstImg = item.images ? item.images[0] : item.image;
+                el.innerHTML = `<img src="${firstImg}" class="w-full h-full object-cover">`;
+                el.onclick = () => openPostDetailModal(item.id);
+                container.appendChild(el);
             });
         }
 
         function filterExplore() {
-            renderExploreGrid();
+            const query = document.getElementById('explore-search-input').value.toLowerCase();
+            const items = document.querySelectorAll('#explore-grid-container > div');
+            items.forEach((el, index) => {
+                const post = store.posts[index];
+                if (!post) return;
+                const matchText = (post.caption + ' ' + post.author).toLowerCase();
+                el.style.display = matchText.includes(query) || query === '' ? 'block' : 'none';
+            });
         }
 
         function searchHashtag(tag) {
@@ -1281,7 +1267,7 @@
             const searchInput = document.getElementById('explore-search-input');
             if (searchInput) {
                 searchInput.value = '#' + tag;
-                renderExploreGrid();
+                filterExplore();
             }
         }
 
@@ -2096,6 +2082,16 @@
             return text
                 .replace(/@([a-zA-Z0-9_]+)/g, '<span class="text-pink-600 font-semibold cursor-pointer hover:underline" onclick="event.stopPropagation(); closeModal(\'modal-post-detail\'); viewProfile(\'$1\')">@$1</span>')
                 .replace(/#([가-힣a-zA-Z0-9_]+)/g, '<span class="text-pink-600 font-semibold cursor-pointer hover:underline" onclick="event.stopPropagation(); searchHashtag(\'$1\')">#$1</span>');
+        }
+
+        function searchHashtag(tag) {
+            closeModal('modal-post-detail');
+            switchTab('explore');
+            const searchInput = document.getElementById('explore-search-input');
+            if (searchInput) {
+                searchInput.value = '#' + tag;
+                filterExplore();
+            }
         }
 
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
