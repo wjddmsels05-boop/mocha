@@ -44,6 +44,7 @@
     </style>
 </head>
 <body class="text-slate-800 antialiased selection:bg-pink-100 selection:text-pink-600">
+
     <div id="app" class="min-h-screen flex flex-col md:flex-row max-w-6xl mx-auto bg-white shadow-sm border-x border-gray-100">
 
         <!-- Sidebar Navigation (Desktop) -->
@@ -61,15 +62,6 @@
                 <button onclick="switchTab('dm')" id="nav-dm" class="w-full flex items-center gap-4 p-3 font-medium rounded-lg hover:bg-gray-100 transition">
                     <i class="fa-regular fa-paper-plane text-xl w-6"></i> 다이렉트 (DM)
                 </button>
-                <button onclick="openNewStoryModal()" id="admin-story-btn-side" class="hidden w-full flex items-center gap-4 p-3 font-medium rounded-lg hover:bg-gray-100 text-amber-600 transition">
-                    <i class="fa-solid fa-circle-plus text-xl w-6"></i> 스토리 올리기 (관리자)
-                </button>
-                <button onclick="openNewPostModal()" id="admin-create-btn-side" class="hidden w-full flex items-center gap-4 p-3 font-medium rounded-lg hover:bg-gray-100 text-pink-600 transition">
-                    <i class="fa-regular fa-square-plus text-xl w-6"></i> 피드 올리기 (관리자)
-                </button>
-                <button onclick="openNewAccountModal()" id="admin-create-account-btn-side" class="hidden w-full flex items-center gap-4 p-3 font-medium rounded-lg hover:bg-gray-100 text-purple-600 transition">
-                    <i class="fa-solid fa-user-plus text-xl w-6"></i> 새 캐릭터 추가 (관리자)
-                </button>
                 <button onclick="viewProfile(store.currentAccount)" id="nav-profile" class="w-full flex items-center gap-4 p-3 font-medium rounded-lg hover:bg-gray-100 transition">
                     <img id="nav-user-avatar" src="" class="w-6 h-6 rounded-full object-cover border border-gray-300"> 프로필
                 </button>
@@ -79,11 +71,6 @@
                 <div class="text-xs font-semibold text-gray-400 px-3 mb-1 uppercase tracking-wider">등장인물 계정 전환</div>
                 <div id="account-switcher" class="space-y-1 max-h-36 overflow-y-auto hide-scrollbar"></div>
                 
-                <!-- 전체 리셋 버튼 (관리자 전용) -->
-                <button id="admin-reset-btn-side" onclick="handleFullReset()" class="hidden w-full py-2 bg-red-50 hover:bg-red-100 text-red-600 font-bold text-xs rounded-lg text-center transition">
-                    🔄 전체 초기화 (데이터 리셋)
-                </button>
-
                 <div class="p-2 bg-gray-50 rounded-lg border text-center">
                     <span id="admin-status-text" class="text-xs font-bold text-gray-600 cursor-pointer hover:underline" onclick="openModeSelectModal()">독자 모드</span>
                 </div>
@@ -174,23 +161,15 @@
                             <h2 id="profile-username" class="text-xl font-normal">username</h2>
                             <div class="flex gap-2 justify-center flex-wrap">
                                 <button onclick="openEditProfileModal()" id="admin-edit-profile-btn" class="hidden px-4 py-1.5 bg-gray-100 hover:bg-gray-200 font-semibold text-sm rounded-lg transition">
-                                    프로필 편집 (관리자)
+                                    프로필 편집
                                 </button>
                                 <button onclick="handleDeleteAccount()" id="admin-delete-account-btn" class="hidden px-4 py-1.5 bg-red-100 hover:bg-red-200 text-red-600 font-semibold text-sm rounded-lg transition">
-                                    캐릭터 삭제 (관리자)
+                                    캐릭터 삭제
                                 </button>
                                 <button onclick="handleToggleFollow()" id="profile-follow-btn" class="px-4 py-1.5 bg-sky-500 hover:bg-sky-600 text-white font-semibold text-sm rounded-lg transition">
                                     팔로우
                                 </button>
                             </div>
-                        </div>
-
-                        <!-- 모바일 관리자 액션 버튼 그룹 -->
-                        <div id="mobile-admin-actions" class="hidden flex flex-wrap gap-2 justify-center sm:justify-start pt-1">
-                            <button onclick="openNewStoryModal()" class="px-3 py-1.5 bg-amber-500 text-white text-xs font-bold rounded-lg shadow-sm">➕ 스토리 올리기</button>
-                            <button onclick="openNewPostModal()" class="px-3 py-1.5 bg-pink-500 text-white text-xs font-bold rounded-lg shadow-sm">➕ 피드 올리기</button>
-                            <button onclick="openNewAccountModal()" class="px-3 py-1.5 bg-purple-600 text-white text-xs font-bold rounded-lg shadow-sm">👤 캐릭터 추가</button>
-                            <button onclick="handleFullReset()" class="px-3 py-1.5 bg-red-600 text-white text-xs font-bold rounded-lg shadow-sm">🔄 전체 리셋</button>
                         </div>
 
                         <div class="flex justify-center sm:justify-start gap-8 text-sm">
@@ -215,7 +194,7 @@
             </div>
         </main>
 
-        <!-- Fixed Bottom Bar -->
+        <!-- Fixed Bottom Bar (인스타 스타일 [...] 기타 버튼 적용) -->
         <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center py-2 z-40 md:left-64 shadow-lg">
             <button onclick="openPovSelectModal()" class="flex flex-col items-center text-gray-700 hover:text-pink-600">
                 <img id="bottom-pov-avatar" src="" class="w-5 h-5 rounded-full object-cover border border-pink-500">
@@ -229,14 +208,40 @@
                 <i class="fa-solid fa-compass text-lg"></i>
                 <span class="text-[10px] font-medium mt-0.5">탐색</span>
             </button>
-            <!-- 관리자 모드 전용 하단 타임캡슐 저장 버튼 -->
-            <button id="bottom-admin-save-btn" onclick="exportHtmlTimeCapsule()" class="hidden flex flex-col items-center text-pink-600 hover:text-pink-700">
-                <i class="fa-solid fa-file-arrow-down text-lg"></i>
-                <span class="text-[10px] font-bold mt-0.5">타임캡슐저장</span>
+            <!-- 항상 떠 있는 [...] 기타 메뉴 버튼 -->
+            <button onclick="openAdminMenuModal()" class="flex flex-col items-center text-gray-700 hover:text-pink-600">
+                <i class="fa-solid fa-ellipsis text-lg"></i>
+                <span class="text-[10px] font-bold mt-0.5">기타</span>
             </button>
         </nav>
     </div>
 
+    <!-- MODAL: MORE MENU POPUP (인스타그램 스타일 바텀 시트) -->
+    <div id="modal-admin-menu" class="hidden fixed inset-0 bg-black/60 z-50 flex items-end justify-center">
+        <div class="bg-white w-full max-w-lg rounded-t-3xl p-5 space-y-3 shadow-2xl animate-fade-in pb-8">
+            <div class="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-2"></div>
+            <div class="text-center font-bold text-sm text-gray-800 border-b pb-2 mb-2">⚙️ 관리 메뉴 모음</div>
+            <div class="space-y-2">
+                <button onclick="closeModal('modal-admin-menu'); openNewAccountModal();" class="w-full py-3 bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition">
+                    <i class="fa-solid fa-user-plus text-sm"></i> 새 캐릭터 추가
+                </button>
+                <button onclick="closeModal('modal-admin-menu'); openNewPostModal();" class="w-full py-3 bg-pink-50 hover:bg-pink-100 text-pink-600 font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition">
+                    <i class="fa-regular fa-square-plus text-sm"></i> 피드 올리기
+                </button>
+                <button onclick="closeModal('modal-admin-menu'); openNewStoryModal();" class="w-full py-3 bg-amber-50 hover:bg-amber-100 text-amber-600 font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition">
+                    <i class="fa-solid fa-circle-plus text-sm"></i> 스토리 올리기
+                </button>
+                <button onclick="closeModal('modal-admin-menu'); exportHtmlTimeCapsule();" class="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition">
+                    <i class="fa-solid fa-file-arrow-down text-sm"></i> 타임캡슐 저장
+                </button>
+                <button onclick="closeModal('modal-admin-menu'); handleFullReset();" class="w-full py-3 bg-red-50 hover:bg-red-100 text-red-600 font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition border border-red-100">
+                    <i class="fa-solid fa-rotate-right text-sm"></i> 전체 리셋하기
+                </button>
+            </div>
+            <button onclick="closeModal('modal-admin-menu')" class="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-500 font-semibold rounded-xl text-xs mt-2">닫기</button>
+        </div>
+    </div>
+    
     <!-- MODAL: FOLLOW LIST -->
     <div id="modal-follow-list" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-xs w-full p-5 space-y-3 shadow-2xl">
@@ -641,7 +646,6 @@
             localStorage.setItem('teezgram_v6_store', JSON.stringify(store));
         }
 
-        // 🔄 전체 리셋 함수 (모든 데이터 초기화)
         function handleFullReset() {
             if (!confirm('정말 모든 데이터(계정, 피드, 스토리, DM 등)를 초기화하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return;
             localStorage.removeItem('teezgram_v6_store');
@@ -651,7 +655,6 @@
             location.reload();
         }
 
-        // 📁 타임캡슐(HTML 파일) 자동 생성 함수
         function exportHtmlTimeCapsule() {
             let htmlContent = document.documentElement.outerHTML;
             const currentDataScript = `const INITIAL_DATA = ${JSON.stringify(store, null, 4)};`;
@@ -751,20 +754,12 @@
 
         function updateAdminUI() {
             const adminBtns = [
-                'admin-create-btn-side', 'admin-create-btn-top',
-                'admin-create-account-btn-side', 'admin-story-btn-side', 
-                'admin-edit-profile-btn', 'admin-delete-account-btn',
-                'bottom-admin-save-btn', 'admin-reset-btn-side'
+                'admin-edit-profile-btn', 'admin-delete-account-btn'
             ];
             adminBtns.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.classList.toggle('hidden', !store.isAdmin);
             });
-
-            const mobileActions = document.getElementById('mobile-admin-actions');
-            if (mobileActions) {
-                mobileActions.classList.toggle('hidden', !store.isAdmin);
-            }
 
             const statusText = document.getElementById('admin-status-text');
             const mobileText = document.getElementById('mobile-admin-text');
@@ -1192,13 +1187,6 @@
                     </div>
                 </article>
             `;
-        }
-
-        function formatMentionsAndTags(text) {
-            if (!text) return '';
-            return text
-                .replace(/@([a-zA-Z0-9_]+)/g, '<span class="text-pink-600 font-semibold cursor-pointer" onclick="viewProfile(\'$1\')">@$1</span>')
-                .replace(/#([a-zA-Z0-9가-힣_]+)/g, '<span class="text-sky-600 font-medium cursor-pointer" onclick="searchHashtag(\'$1\')">#$1</span>');
         }
 
         function slidePostImg(postId, direction) {
@@ -2056,50 +2044,52 @@
             const container = document.getElementById('account-switcher');
             const selectPost = document.getElementById('post-author-select');
             const selectStory = document.getElementById('story-author-select');
-            if (container) container.innerHTML = '';
-            if (selectPost) selectPost.innerHTML = '';
-            if (selectStory) selectStory.innerHTML = '';
+            container.innerHTML = ''; selectPost.innerHTML = ''; selectStory.innerHTML = '';
 
             Object.values(store.accounts).forEach(acc => {
-                const isSelected = store.currentAccount === acc.username;
-                
-                if (container) {
-                    const btn = document.createElement('button');
-                    btn.className = `w-full flex items-center gap-2 p-2 rounded-lg text-left text-xs transition ${isSelected ? 'bg-pink-50 font-bold text-pink-600' : 'hover:bg-gray-100 text-gray-700'}`;
-                    btn.onclick = () => {
-                        store.currentAccount = acc.username;
-                        saveStore();
-                        renderAccountSwitcher();
-                        updatePovUI();
-                        if (activeTab === 'dm') renderDmView();
-                    };
-                    btn.innerHTML = `
-                        <img src="${acc.avatar}" class="w-6 h-6 rounded-full object-cover">
-                        <span class="truncate flex-1">@${acc.username}</span>
-                        ${isSelected ? '<span class="text-[10px]">✓</span>' : ''}
-                    `;
-                    container.appendChild(btn);
-                }
+                const btn = document.createElement('button');
+                btn.className = `w-full flex items-center gap-2 p-2 rounded-lg text-left text-xs ${store.currentAccount === acc.username ? 'bg-pink-50 text-pink-600 font-semibold' : 'hover:bg-gray-50'}`;
+                btn.onclick = () => {
+                    store.currentAccount = acc.username;
+                    saveStore();
+                    renderAccountSwitcher();
+                    updatePovUI();
+                    if (activeTab === 'dm') renderDmView();
+                    if (activeTab === 'profile') renderProfile(activeProfileId);
+                };
+                btn.innerHTML = `<img src="${acc.avatar}" class="w-5 h-5 rounded-full object-cover"><span class="truncate">${acc.username}</span>`;
+                container.appendChild(btn);
 
-                if (selectPost) {
-                    const opt = document.createElement('option');
-                    opt.value = acc.username;
-                    opt.textContent = `@${acc.username} (${acc.fullName})`;
-                    selectPost.appendChild(opt);
-                }
-
-                if (selectStory) {
-                    const opt = document.createElement('option');
-                    opt.value = acc.username;
-                    opt.textContent = `@${acc.username} (${acc.fullName})`;
-                    selectStory.appendChild(opt);
-                }
+                const opt = `<option value="${acc.username}">@${acc.username} (${acc.fullName})</option>`;
+                selectPost.innerHTML += opt;
+                selectStory.innerHTML += opt;
             });
+
+            const cur = store.accounts[store.currentAccount] || Object.values(store.accounts)[0];
+            if (cur) {
+                document.getElementById('nav-user-avatar').src = cur.avatar;
+            }
         }
 
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.add('hidden');
+        function formatMentionsAndTags(text) {
+            if (!text) return '';
+            return text
+                .replace(/@([a-zA-Z0-9_]+)/g, '<span class="text-pink-600 font-semibold cursor-pointer hover:underline" onclick="event.stopPropagation(); closeModal(\'modal-post-detail\'); viewProfile(\'$1\')">@$1</span>')
+                .replace(/#([가-힣a-zA-Z0-9_]+)/g, '<span class="text-pink-600 font-semibold cursor-pointer hover:underline" onclick="event.stopPropagation(); searchHashtag(\'$1\')">#$1</span>');
         }
+
+        function searchHashtag(tag) {
+            closeModal('modal-post-detail');
+            switchTab('explore');
+            const searchInput = document.getElementById('explore-search-input');
+            if (searchInput) {
+                searchInput.value = '#' + tag;
+                filterExplore();
+            }
+        }
+
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+        function openAdminMenuModal() { document.getElementById('modal-admin-menu').classList.remove('hidden'); }
     </script>
 </body>
 </html>
