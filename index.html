@@ -216,7 +216,7 @@
         </div>
     </div>
 
-    <!-- STORY VIEWER MODAL -->
+    <!-- STORY VIEWER MODAL (빈곳 클릭 시 닫기 기능 onclick 추가) -->
     <div id="modal-story-viewer" onclick="handleStoryViewerOutsideClick(event)" class="hidden fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-2">
         <div id="story-viewer-card" class="relative w-full max-w-sm h-[85vh] bg-gray-900 rounded-2xl overflow-hidden flex flex-col justify-between p-4 border border-gray-800">
             <div class="flex items-center justify-between text-white z-10">
@@ -239,7 +239,7 @@
 
             <div id="story-reactions-display" class="relative z-10 bg-black/50 text-white text-xs p-2 rounded-lg max-h-20 overflow-y-auto hide-scrollbar space-y-1"></div>
 
-            <div id="story-reactions-input-bar" class="relative z-10 bg-black/40 backdrop-blur-md rounded-full px-4 py-2 flex justify-around text-xl text-white">
+            <div class="relative z-10 bg-black/40 backdrop-blur-md rounded-full px-4 py-2 flex justify-around text-xl text-white">
                 <button onclick="sendStoryEmoji('❤️')">❤️</button>
                 <button onclick="sendStoryEmoji('🔥')">🔥</button>
                 <button onclick="sendStoryEmoji('😂')">😂</button>
@@ -832,6 +832,7 @@
             }
         }
 
+        // 스토리 뷰어 배경(빈 곳) 클릭 시 닫기
         function handleStoryViewerOutsideClick(event) {
             if (event.target.id === 'modal-story-viewer') {
                 closeModal('modal-story-viewer');
@@ -903,11 +904,7 @@
             document.getElementById('story-next-btn').classList.add('hidden');
             document.getElementById('story-pagination-badge').classList.add('hidden');
 
-            // 일반 스토리이므로 리액션 공간 및 이모지 바 표시
-            document.getElementById('story-reactions-display').style.display = 'block';
-            document.getElementById('story-reactions-input-bar').style.display = 'flex';
             renderStoryReactions();
-
             document.getElementById('modal-story-viewer').classList.remove('hidden');
         }
 
@@ -949,11 +946,11 @@
                 badge.classList.add('hidden');
             }
 
-            // 하이라이트 모드일 때는 불필요한 반응 창 및 이모지 입력 바 숨기기
-            document.getElementById('story-reactions-display').style.display = 'none';
-            document.getElementById('story-reactions-input-bar').style.display = 'none';
+            const container = document.getElementById('story-reactions-display');
+            container.innerHTML = `<div class="text-gray-400 text-center text-[11px]">하이라이트 모드</div>`;
         }
 
+        // 하이라이트 사진 넘기기 기능
         function slideStoryItem(direction) {
             if (!activeHighlightViewer.isHighlight) return;
             const imgs = activeHighlightViewer.images;
@@ -1306,4 +1303,173 @@
                     return new Promise((resolve) => {
                         const reader = new FileReader();
                         reader.onload = (e) => resolve(e.target.result);
-                        reader.
+                        reader.readAsDataURL(file);
+                    });
+                }));
+            };
+
+            const processSave = (newImages) => {
+                if (editingPostId) {
+                    const post = store.posts.find(p => p.id === editingPostId);
+                    if (post) {
+                        post.author = author;
+                        post.caption = caption;
+                        post.likes = likes;
+                        post.time = time;
+                        if (newImages && newImages.length > 0) {
+                            post.images = newImages;
+                            post.activeImgIdx = 0;
+                        }
+                    }
+                } else {
+                    store.posts.unshift({
+                        id: 'p_' + Date.now(),
+                        author,
+                        images: (newImages && newImages.length > 0) ? newImages : ['https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600'],
+                        activeImgIdx: 0,
+                        caption,
+                        likes,
+                        likedByMe: false,
+                        time,
+                        comments: []
+                    });
+                }
+                saveStore();
+                closeModal('modal-new-post');
+                renderFeed();
+                if (activeTab === 'profile') renderProfile(activeProfileId);
+            };
+
+            if (fileInput.files && fileInput.files.length > 0) {
+                readMultipleFiles(fileInput.files).then(images => processSave(images));
+            } else {
+                processSave(null);
+            }
+        }
+
+        function handleDeletePost() {
+            if (!store.isAdmin) return;
+            if (!editingPostId) return;
+            if (!confirm('이 피드를 삭제하시겠습니까?')) return;
+
+            store.posts = store.posts.filter(p => p.id !== editingPostId);
+            saveStore();
+            closeModal('modal-new-post');
+            renderFeed();
+            if (activeTab === 'profile') renderProfile(activeProfileId);
+        }
+
+        function handleAddComment(e, postId) {
+            e.preventDefault();
+            const input = e.target.querySelector('input');
+            const text = input.value.trim();
+            if (!text) return;
+            const post = store.posts.find(p => p.id === postId);
+            if (post) {
+                post.comments.push({ author: store.currentAccount, text });
+                saveStore();
+                input.value = '';
+                renderFeed();
+                if (!document.getElementById('modal-post-detail').classList.contains('hidden')) {
+                    renderScrollFeedModal();
+                }
+            }
+        }
+
+        function toggleLike(postId) {
+            const post = store.posts.find(p => p.id === postId);
+            if (post) {
+                post.likedByMe = !post.likedByMe;
+                post.likes += post.likedByMe ? 1 : -1;
+                saveStore();
+                renderFeed();
+                if (!document.getElementById('modal-post-detail').classList.contains('hidden')) {
+                    renderScrollFeedModal();
+                }
+            }
+        }
+
+        function openNewAccountModal() {
+            if (!store.isAdmin) return;
+            document.getElementById('modal-new-account').classList.remove('hidden');
+        }
+
+        function handleCreateAccount(e) {
+            e.preventDefault();
+            if (!store.isAdmin) return;
+            const username = document.getElementById('new-acc-username').value.trim();
+            const fullName = document.getElementById('new-acc-fullname').value.trim();
+            const bio = document.getElementById('new-acc-bio').value.trim();
+            const fileInput = document.getElementById('new-acc-avatar-file');
+
+            if (!username || store.accounts[username]) {
+                alert('이미 존재하는 아이디이거나 올바르지 않습니다.');
+                return;
+            }
+
+            const saveAcc = (avatarUrl) => {
+                store.accounts[username] = {
+                    username,
+                    fullName,
+                    avatar: avatarUrl,
+                    bio,
+                    followers: [],
+                    following: [],
+                    highlights: []
+                };
+                saveStore();
+                renderAccountSwitcher();
+                closeModal('modal-new-account');
+                alert('@' + username + ' 캐릭터가 추가되었습니다.');
+            };
+
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => saveAcc(e.target.result);
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                saveAcc('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150');
+            }
+        }
+
+        function renderAccountSwitcher() {
+            const container = document.getElementById('account-switcher');
+            const selectPost = document.getElementById('post-author-select');
+            const selectStory = document.getElementById('story-author-select');
+            container.innerHTML = ''; selectPost.innerHTML = ''; selectStory.innerHTML = '';
+
+            Object.values(store.accounts).forEach(acc => {
+                const btn = document.createElement('button');
+                btn.className = `w-full flex items-center gap-2 p-2 rounded-lg text-left text-xs ${store.currentAccount === acc.username ? 'bg-pink-50 text-pink-600 font-semibold' : 'hover:bg-gray-50'}`;
+                btn.onclick = () => {
+                    store.currentAccount = acc.username;
+                    saveStore();
+                    renderAccountSwitcher();
+                    if (activeTab === 'dm') renderDmView();
+                    if (activeTab === 'profile') renderProfile(activeProfileId);
+                };
+                btn.innerHTML = `<img src="${acc.avatar}" class="w-5 h-5 rounded-full object-cover"><span class="truncate">${acc.username}</span>`;
+                container.appendChild(btn);
+
+                const opt = `<option value="${acc.username}">@${acc.username} (${acc.fullName})</option>`;
+                selectPost.innerHTML += opt;
+                selectStory.innerHTML += opt;
+            });
+
+            const cur = store.accounts[store.currentAccount] || Object.values(store.accounts)[0];
+            if (cur) {
+                document.getElementById('nav-user-avatar').src = cur.avatar;
+            }
+        }
+
+        function formatMentionsAndTags(text) {
+            if (!text) return '';
+            return text
+                .replace(/@([a-zA-Z0-9_]+)/g, '<span class="text-pink-600 font-semibold cursor-pointer hover:underline" onclick="event.stopPropagation(); closeModal(\'modal-post-detail\'); viewProfile(\'$1\')">@$1</span>')
+                .replace(/#([가-힣a-zA-Z0-9_]+)/g, '<span class="text-pink-600 font-semibold cursor-pointer hover:underline" onclick="event.stopPropagation(); searchHashtag(\'$1\')">#$1</span>');
+        }
+
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+    </script>
+</body>
+</html>
