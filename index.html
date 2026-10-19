@@ -40,6 +40,7 @@
                 <h1 class="text-2xl font-semibold tracking-tight font-serif italic cursor-pointer text-pink-600" onclick="switchTab('feed')">Teezgram</h1>
             </div>
             <nav class="space-y-1 flex-1">
+                <!-- 좌측 사이드바 홈 버튼: 바로 홈 피드로 이동 -->
                 <button onclick="switchTab('feed')" id="nav-feed" class="w-full flex items-center gap-4 p-3 font-medium rounded-lg hover:bg-gray-100 transition">
                     <i class="fa-solid fa-house text-xl w-6"></i> 홈
                 </button>
@@ -67,9 +68,9 @@
                 <div class="text-xs font-semibold text-gray-400 px-3 mb-2 uppercase tracking-wider">등장인물 계정 전환</div>
                 <div id="account-switcher" class="space-y-1 max-h-36 overflow-y-auto hide-scrollbar"></div>
                 
-                <button onclick="toggleAdminModal()" id="admin-toggle-btn" class="mt-4 w-full text-xs py-2.5 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-lg flex items-center justify-center gap-2 shadow-sm border border-gray-200">
-                    <i class="fa-solid fa-lock" id="admin-lock-icon"></i> <span id="admin-status-text">독자 모드</span>
-                </button>
+                <div class="mt-4 p-2 bg-gray-50 rounded-lg border text-center">
+                    <span id="admin-status-text" class="text-xs font-bold text-gray-600">독자 모드</span>
+                </div>
             </div>
         </aside>
 
@@ -78,22 +79,18 @@
             <header class="md:hidden sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex justify-between items-center z-30">
                 <h1 class="text-xl font-bold font-serif italic text-pink-600 cursor-pointer" onclick="switchTab('feed')">Teezgram</h1>
                 <div class="flex items-center gap-2">
-                    <button onclick="toggleAdminModal()" class="text-xs bg-pink-50 text-pink-600 px-2.5 py-1.5 rounded-lg font-bold border border-pink-200 flex items-center gap-1">
-                        <i class="fa-solid fa-lock" id="mobile-admin-lock-icon"></i> <span id="mobile-admin-text">독자모드</span>
-                    </button>
+                    <span id="mobile-admin-text" class="text-xs bg-pink-50 text-pink-600 px-2.5 py-1 rounded-full font-bold border border-pink-200">독자모드</span>
                     <button onclick="switchTab('dm')" class="text-xl text-gray-700 px-1"><i class="fa-regular fa-paper-plane"></i></button>
-                    <button onclick="openNewPostModal()" id="admin-create-btn-top" class="hidden text-pink-600">
-                        <i class="fa-regular fa-square-plus text-2xl"></i>
-                    </button>
                 </div>
             </header>
 
-            <!-- VIEW 1: HOME FEED -->
+            <!-- VIEW 1: HOME FEED (상단 스토리 + 하단 피드) -->
             <div id="view-feed" class="max-w-lg mx-auto py-4 px-2 md:px-0 space-y-6">
                 <!-- Stories Carousel -->
                 <div class="bg-white border md:border-gray-200 md:rounded-lg p-4 overflow-x-auto hide-scrollbar flex gap-4">
                     <div id="stories-container" class="flex gap-4"></div>
                 </div>
+                <!-- Feed Posts -->
                 <div id="feed-posts-container" class="space-y-6"></div>
             </div>
 
@@ -178,17 +175,34 @@
             </div>
         </main>
 
-        <!-- Fixed Bottom Bar: 홈, 검색 (나가기 제거됨) -->
+        <!-- Fixed Bottom Bar: 하단 홈 버튼 누르면 모드 선택 창 발생 -->
         <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center py-2.5 z-40 md:left-64 shadow-lg">
-            <button onclick="switchTab('feed'); closeModal('modal-post-detail');" class="flex flex-col items-center text-gray-700 hover:text-pink-600">
+            <button onclick="openModeSelectModal()" class="flex flex-col items-center text-pink-600 hover:text-pink-700">
                 <i class="fa-solid fa-house text-lg"></i>
-                <span class="text-[10px] font-medium mt-0.5">홈</span>
+                <span class="text-[10px] font-bold mt-0.5">홈</span>
             </button>
             <button onclick="switchTab('explore'); closeModal('modal-post-detail');" class="flex flex-col items-center text-gray-700 hover:text-pink-600">
                 <i class="fa-solid fa-magnifying-glass text-lg"></i>
                 <span class="text-[10px] font-medium mt-0.5">검색</span>
             </button>
         </nav>
+    </div>
+
+    <!-- MODAL: MODE SELECT (하단 홈 버튼 누르면 나타남) -->
+    <div id="modal-mode-select" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-xs w-full p-6 text-center space-y-4 shadow-2xl">
+            <h3 class="text-lg font-bold text-gray-800">모드 선택</h3>
+            <p class="text-xs text-gray-500">원하시는 모드를 선택하여 홈으로 이동합니다.</p>
+            <div class="space-y-2 pt-2">
+                <button onclick="selectReaderMode()" class="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold rounded-xl text-sm transition">
+                    📖 독자 모드
+                </button>
+                <button onclick="selectAdminMode()" class="w-full py-3 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-xl text-sm transition">
+                    👑 관리자 모드
+                </button>
+            </div>
+            <button onclick="closeModal('modal-mode-select')" class="text-xs text-gray-400 underline pt-2">닫기</button>
+        </div>
     </div>
 
     <!-- FULL FEED SCROLL MODAL -->
@@ -247,7 +261,7 @@
                 <input type="password" id="admin-password-input" placeholder="비밀번호 입력" class="w-full border rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500">
             </div>
             <div class="flex gap-2">
-                <button onclick="toggleAdminModal()" class="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-semibold">취소</button>
+                <button onclick="closeModal('modal-admin')" class="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-semibold">취소</button>
                 <button onclick="loginAdmin()" class="flex-1 py-2 bg-pink-500 text-white rounded-lg text-sm font-semibold hover:bg-pink-600">확인</button>
             </div>
         </div>
@@ -455,12 +469,24 @@
             updateAdminUI();
         });
 
-        function toggleAdminModal() {
+        // MODE SELECT & LOGIN
+        function openModeSelectModal() {
+            closeModal('modal-post-detail');
+            document.getElementById('modal-mode-select').classList.remove('hidden');
+        }
+
+        function selectReaderMode() {
+            store.isAdmin = false;
+            saveStore();
+            updateAdminUI();
+            closeModal('modal-mode-select');
+            switchTab('feed');
+        }
+
+        function selectAdminMode() {
+            closeModal('modal-mode-select');
             if (store.isAdmin) {
-                store.isAdmin = false;
-                saveStore();
-                updateAdminUI();
-                alert('독자 모드로 전환되었습니다.');
+                switchTab('feed');
             } else {
                 document.getElementById('modal-admin').classList.remove('hidden');
             }
@@ -474,7 +500,7 @@
                 updateAdminUI();
                 closeModal('modal-admin');
                 document.getElementById('admin-password-input').value = '';
-                alert('관리자 모드로 전환되었습니다!');
+                switchTab('feed');
             } else {
                 alert('비밀번호가 올바르지 않습니다.');
             }
@@ -492,19 +518,13 @@
 
             const statusText = document.getElementById('admin-status-text');
             const mobileText = document.getElementById('mobile-admin-text');
-            const lockIcon = document.getElementById('admin-lock-icon');
-            const mobileLockIcon = document.getElementById('mobile-admin-lock-icon');
 
             if (store.isAdmin) {
-                if(statusText) statusText.innerText = '관리자 모드 (클릭하여 잠금)';
+                if(statusText) statusText.innerText = '👑 관리자 모드 중';
                 if(mobileText) mobileText.innerText = '관리자모드';
-                if(lockIcon) lockIcon.className = 'fa-solid fa-unlock text-pink-500';
-                if(mobileLockIcon) mobileLockIcon.className = 'fa-solid fa-unlock text-pink-500';
             } else {
-                if(statusText) statusText.innerText = '독자 모드 (클릭하여 로그인)';
+                if(statusText) statusText.innerText = '📖 독자 모드 중';
                 if(mobileText) mobileText.innerText = '독자모드';
-                if(lockIcon) lockIcon.className = 'fa-solid fa-lock';
-                if(mobileLockIcon) mobileLockIcon.className = 'fa-solid fa-lock';
             }
         }
 
