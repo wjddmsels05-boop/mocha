@@ -66,8 +66,9 @@
             <div class="border-t border-gray-200 pt-4 mt-auto">
                 <div class="text-xs font-semibold text-gray-400 px-3 mb-2 uppercase tracking-wider">등장인물 계정 전환</div>
                 <div id="account-switcher" class="space-y-1 max-h-36 overflow-y-auto hide-scrollbar"></div>
-                <button onclick="toggleAdminModal()" id="admin-toggle-btn" class="mt-4 w-full text-xs py-2 px-3 bg-gray-100 hover:bg-gray-200 text-gray-600 font-semibold rounded-md flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-lock" id="admin-lock-icon"></i> <span id="admin-status-text">독자 모드 (클릭하여 관리자 로그인)</span>
+                
+                <button onclick="toggleAdminModal()" id="admin-toggle-btn" class="mt-4 w-full text-xs py-2.5 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-lg flex items-center justify-center gap-2 shadow-sm border border-gray-200">
+                    <i class="fa-solid fa-lock" id="admin-lock-icon"></i> <span id="admin-status-text">독자 모드</span>
                 </button>
             </div>
         </aside>
@@ -76,11 +77,11 @@
         <main class="flex-1 md:ml-64 pb-20 md:pb-0 min-h-screen">
             <header class="md:hidden sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex justify-between items-center z-30">
                 <h1 class="text-xl font-bold font-serif italic text-pink-600 cursor-pointer" onclick="switchTab('feed')">Teezgram</h1>
-                <div class="flex items-center gap-3">
-                    <button onclick="switchTab('dm')" class="text-xl text-gray-700"><i class="fa-regular fa-paper-plane"></i></button>
-                    <button onclick="toggleAdminModal()" class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-700 font-medium">
-                        <i class="fa-solid fa-lock" id="mobile-admin-lock-icon"></i>
+                <div class="flex items-center gap-2">
+                    <button onclick="toggleAdminModal()" class="text-xs bg-pink-50 text-pink-600 px-2.5 py-1.5 rounded-lg font-bold border border-pink-200 flex items-center gap-1">
+                        <i class="fa-solid fa-lock" id="mobile-admin-lock-icon"></i> <span id="mobile-admin-text">독자모드</span>
                     </button>
+                    <button onclick="switchTab('dm')" class="text-xl text-gray-700 px-1"><i class="fa-regular fa-paper-plane"></i></button>
                     <button onclick="openNewPostModal()" id="admin-create-btn-top" class="hidden text-pink-600">
                         <i class="fa-regular fa-square-plus text-2xl"></i>
                     </button>
@@ -173,22 +174,11 @@
                     </div>
                 </div>
 
-                <!-- Story Highlights Section -->
-                <div class="mb-8 border-b border-gray-200 pb-6">
-                    <div class="flex justify-between items-center mb-3">
-                        <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider">스토리 하이라이트</h3>
-                        <button onclick="openNewHighlightModal()" id="admin-add-hl-btn" class="hidden text-xs bg-amber-50 text-amber-700 font-semibold px-2 py-1 rounded border border-amber-200 hover:bg-amber-100">
-                            ➕ 새 하이라이트 추가
-                        </button>
-                    </div>
-                    <div id="profile-story-highlights" class="flex gap-4 overflow-x-auto hide-scrollbar"></div>
-                </div>
-
                 <div id="profile-posts-grid" class="grid grid-cols-3 gap-1 sm:gap-4"></div>
             </div>
         </main>
 
-        <!-- Fixed Bottom Bar for Mobile & General Exit Controls (홈, 검색, 나가기 3개 버튼) -->
+        <!-- Fixed Bottom Bar: 홈, 검색 (나가기 제거됨) -->
         <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center py-2.5 z-40 md:left-64 shadow-lg">
             <button onclick="switchTab('feed'); closeModal('modal-post-detail');" class="flex flex-col items-center text-gray-700 hover:text-pink-600">
                 <i class="fa-solid fa-house text-lg"></i>
@@ -198,24 +188,18 @@
                 <i class="fa-solid fa-magnifying-glass text-lg"></i>
                 <span class="text-[10px] font-medium mt-0.5">검색</span>
             </button>
-            <button onclick="closeModal('modal-post-detail'); closeModal('modal-story-viewer');" class="flex flex-col items-center text-red-500 hover:text-red-700 font-bold">
-                <i class="fa-solid fa-xmark text-xl"></i>
-                <span class="text-[10px] mt-0.5">나가기</span>
-            </button>
         </nav>
     </div>
 
-    <!-- FULL FEED SCROLL MODAL (피드 스크롤 뷰어 모달) -->
+    <!-- FULL FEED SCROLL MODAL -->
     <div id="modal-post-detail" class="hidden fixed inset-0 bg-black/80 z-50 overflow-y-auto pb-20">
         <div class="max-w-lg mx-auto py-6 px-2">
-            <!-- Header bar inside Modal -->
             <div class="flex justify-between items-center text-white mb-4 px-2">
                 <span class="font-bold text-lg">피드 목록</span>
                 <button onclick="closeModal('modal-post-detail')" class="bg-gray-800 text-white px-3 py-1 rounded-full text-xs hover:bg-gray-700">
                     <i class="fa-solid fa-xmark"></i> 닫기
                 </button>
             </div>
-            <!-- All Posts Render Container -->
             <div id="modal-feed-scroll-container" class="space-y-6"></div>
         </div>
     </div>
@@ -223,7 +207,6 @@
     <!-- STORY VIEWER MODAL -->
     <div id="modal-story-viewer" class="hidden fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-2">
         <div class="relative w-full max-w-sm h-[85vh] bg-gray-900 rounded-2xl overflow-hidden flex flex-col justify-between p-4 border border-gray-800">
-            <div id="story-progress-bar" class="flex gap-1 z-10 mb-2"></div>
             <div class="flex items-center justify-between text-white z-10">
                 <div class="flex items-center gap-2">
                     <img id="story-view-avatar" src="" class="w-8 h-8 rounded-full object-cover">
@@ -236,10 +219,8 @@
                 </div>
             </div>
 
-            <div class="absolute inset-0 flex items-center justify-between z-0">
-                <button onclick="prevStoryInHighlight()" class="w-1/3 h-full cursor-pointer text-left pl-2 opacity-0 hover:opacity-100 text-white text-2xl">❮</button>
+            <div class="absolute inset-0 flex items-center justify-center">
                 <img id="story-view-img" src="" class="w-full h-full object-cover">
-                <button onclick="nextStoryInHighlight()" class="w-1/3 h-full cursor-pointer text-right pr-2 opacity-0 hover:opacity-100 text-white text-2xl">❯</button>
             </div>
 
             <div id="story-reactions-display" class="relative z-10 bg-black/50 text-white text-xs p-2 rounded-lg max-h-20 overflow-y-auto hide-scrollbar space-y-1"></div>
@@ -256,27 +237,19 @@
         </div>
     </div>
 
-    <!-- MODAL: CREATE / EDIT HIGHLIGHT FOLDER -->
-    <div id="modal-highlight" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl max-w-md w-full p-6 space-y-4 shadow-xl">
-            <div class="flex justify-between items-center border-b pb-3">
-                <h3 id="hl-modal-title" class="font-bold">스토리 하이라이트 만들기</h3>
-                <button onclick="closeModal('modal-highlight')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+    <!-- MODAL: ADMIN LOGIN -->
+    <div id="modal-admin" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-sm w-full p-6 space-y-4 shadow-xl">
+            <h3 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-user-shield text-pink-500"></i> 작가 관리자 로그인</h3>
+            <p class="text-xs text-gray-500">비밀번호를 입력하여 관리자 모드로 전환하세요.</p>
+            <div>
+                <label class="block text-xs font-semibold text-gray-500 mb-1">관리자 비밀번호</label>
+                <input type="password" id="admin-password-input" placeholder="비밀번호 입력" class="w-full border rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500">
             </div>
-            <form onsubmit="handleSaveHighlight(event)" class="space-y-3">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-500 mb-1">하이라이트 폴더 이름</label>
-                    <input type="text" id="hl-title-input" required placeholder="예: 1. 데이트" class="w-full border rounded-lg p-2 text-sm">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-500 mb-1">대표 이미지 선택</label>
-                    <input type="file" id="hl-cover-file" accept="image/*" class="w-full text-xs text-gray-500">
-                </div>
-                <div class="flex gap-2 pt-2">
-                    <button type="button" id="hl-delete-btn" onclick="handleDeleteHighlight()" class="hidden py-2 px-4 bg-red-100 text-red-600 rounded-lg text-xs font-semibold">🗑️ 삭제</button>
-                    <button type="submit" class="flex-1 py-2 bg-amber-500 text-white rounded-lg font-semibold">저장</button>
-                </div>
-            </form>
+            <div class="flex gap-2">
+                <button onclick="toggleAdminModal()" class="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-semibold">취소</button>
+                <button onclick="loginAdmin()" class="flex-1 py-2 bg-pink-500 text-white rounded-lg text-sm font-semibold hover:bg-pink-600">확인</button>
+            </div>
         </div>
     </div>
 
@@ -308,11 +281,11 @@
         </div>
     </div>
 
-    <!-- MODAL: CREATE / EDIT POST (다중 사진 지원) -->
+    <!-- MODAL: CREATE / EDIT POST -->
     <div id="modal-new-post" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-xl max-w-lg w-full p-6 space-y-4 shadow-xl max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b pb-3">
-                <h3 id="post-modal-title" class="font-bold">새 피드 올리기 (여러 장 선택 가능)</h3>
+                <h3 id="post-modal-title" class="font-bold">새 피드 올리기 (여러 장 가능)</h3>
                 <button onclick="closeModal('modal-new-post')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             <form onsubmit="handleSavePost(event)" class="space-y-4">
@@ -321,7 +294,7 @@
                     <select id="post-author-select" class="w-full border rounded-lg p-2 text-sm bg-white"></select>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-500 mb-1">사진 여러 장 선택 (Ctrl/Shift 키 이용)</label>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">사진 여러 장 선택</label>
                     <input type="file" id="post-image-files" accept="image/*" multiple class="w-full text-xs text-gray-500">
                 </div>
                 <div>
@@ -343,21 +316,6 @@
                     <button type="submit" class="flex-1 py-2.5 bg-pink-600 text-white rounded-lg font-semibold">게시물 저장</button>
                 </div>
             </form>
-        </div>
-    </div>
-
-    <!-- MODAL: ADMIN LOGIN -->
-    <div id="modal-admin" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl max-w-sm w-full p-6 space-y-4 shadow-xl">
-            <h3 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-user-shield text-pink-500"></i> 작가 관리자 로그인</h3>
-            <div>
-                <label class="block text-xs font-semibold text-gray-500 mb-1">관리자 비밀번호</label>
-                <input type="password" id="admin-password-input" placeholder="기본 비밀번호: 1234" class="w-full border rounded-lg p-2 text-sm">
-            </div>
-            <div class="flex gap-2">
-                <button onclick="toggleAdminModal()" class="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-semibold">취소</button>
-                <button onclick="loginAdmin()" class="flex-1 py-2 bg-pink-500 text-white rounded-lg text-sm font-semibold">확인</button>
-            </div>
         </div>
     </div>
 
@@ -425,7 +383,7 @@
     <script>
         const INITIAL_DATA = {
             isAdmin: false,
-            adminPass: '1234',
+            adminPass: 'acau1297!',
             currentAccount: 'san_choi',
             activeDmTarget: 'wooyoung_j',
             accounts: {
@@ -479,7 +437,7 @@
             }
         };
 
-        let store = JSON.parse(localStorage.getItem('teezgram_v5_store')) || INITIAL_DATA;
+        let store = JSON.parse(localStorage.getItem('teezgram_v6_store')) || INITIAL_DATA;
         let activeTab = 'feed';
         let activeProfileId = 'san_choi';
         let currentDetailPostId = null;
@@ -487,7 +445,7 @@
         let editingPostId = null;
 
         function saveStore() {
-            localStorage.setItem('teezgram_v5_store', JSON.stringify(store));
+            localStorage.setItem('teezgram_v6_store', JSON.stringify(store));
         }
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -497,7 +455,6 @@
             updateAdminUI();
         });
 
-        // ADMIN LOGIN
         function toggleAdminModal() {
             if (store.isAdmin) {
                 store.isAdmin = false;
@@ -510,14 +467,17 @@
         }
 
         function loginAdmin() {
-            if (document.getElementById('admin-password-input').value === store.adminPass) {
+            const inputPass = document.getElementById('admin-password-input').value;
+            if (inputPass === store.adminPass) {
                 store.isAdmin = true;
                 saveStore();
                 updateAdminUI();
                 closeModal('modal-admin');
                 document.getElementById('admin-password-input').value = '';
-                alert('관리자 로그인 성공!');
-            } else alert('비밀번호가 올바르지 않습니다.');
+                alert('관리자 모드로 전환되었습니다!');
+            } else {
+                alert('비밀번호가 올바르지 않습니다.');
+            }
         }
 
         function updateAdminUI() {
@@ -530,11 +490,24 @@
                 if (el) el.classList.toggle('hidden', !store.isAdmin);
             });
 
-            document.getElementById('admin-status-text').innerText = store.isAdmin ? '관리자 모드 중 (클릭시 잠금)' : '독자 모드 (클릭하여 작가 로그인)';
-            document.getElementById('admin-lock-icon').className = store.isAdmin ? 'fa-solid fa-unlock text-pink-500' : 'fa-solid fa-lock';
+            const statusText = document.getElementById('admin-status-text');
+            const mobileText = document.getElementById('mobile-admin-text');
+            const lockIcon = document.getElementById('admin-lock-icon');
+            const mobileLockIcon = document.getElementById('mobile-admin-lock-icon');
+
+            if (store.isAdmin) {
+                if(statusText) statusText.innerText = '관리자 모드 (클릭하여 잠금)';
+                if(mobileText) mobileText.innerText = '관리자모드';
+                if(lockIcon) lockIcon.className = 'fa-solid fa-unlock text-pink-500';
+                if(mobileLockIcon) mobileLockIcon.className = 'fa-solid fa-unlock text-pink-500';
+            } else {
+                if(statusText) statusText.innerText = '독자 모드 (클릭하여 로그인)';
+                if(mobileText) mobileText.innerText = '독자모드';
+                if(lockIcon) lockIcon.className = 'fa-solid fa-lock';
+                if(mobileLockIcon) mobileLockIcon.className = 'fa-solid fa-lock';
+            }
         }
 
-        // TABS
         function switchTab(tab) {
             activeTab = tab;
             ['feed', 'explore', 'dm', 'profile'].forEach(t => {
@@ -549,7 +522,6 @@
             window.scrollTo(0,0);
         }
 
-        // RENDER POST ITEM CARD
         function buildPostCardHTML(post) {
             const authorAcc = store.accounts[post.author] || { username: post.author, avatar: '' };
             const images = post.images || [post.image];
@@ -565,7 +537,6 @@
                         ${store.isAdmin ? `<button onclick="openEditPostModal('${post.id}')" class="text-gray-500 px-2"><i class="fa-solid fa-ellipsis"></i></button>` : ''}
                     </div>
 
-                    <!-- Multi-image Slide Container -->
                     <div class="relative bg-black flex items-center justify-center max-h-[500px]">
                         <img src="${images[activeIdx]}" class="w-full object-cover max-h-[500px]">
                         ${images.length > 1 ? `
@@ -614,13 +585,11 @@
             }
         }
 
-        // FEED
         function renderFeed() {
             const container = document.getElementById('feed-posts-container');
             container.innerHTML = store.posts.map(post => buildPostCardHTML(post)).join('');
         }
 
-        // FULL SCROLL FEED MODAL
         function openPostDetailModal(postId) {
             currentDetailPostId = postId;
             renderScrollFeedModal();
@@ -632,7 +601,6 @@
             container.innerHTML = store.posts.map(post => buildPostCardHTML(post)).join('');
         }
 
-        // EXPLORE
         function renderExploreGrid() {
             const container = document.getElementById('explore-grid-container');
             container.innerHTML = '';
@@ -664,7 +632,6 @@
             }
         }
 
-        // STORIES
         function renderStories() {
             const container = document.getElementById('stories-container');
             container.innerHTML = '';
@@ -715,7 +682,6 @@
             renderStoryReactions();
         }
 
-        // FOLLOW
         function handleToggleFollow() {
             const currentAcc = store.accounts[store.currentAccount];
             const targetAcc = store.accounts[activeProfileId];
@@ -736,7 +702,6 @@
             renderProfile(activeProfileId);
         }
 
-        // PROFILE
         function viewProfile(username) { activeProfileId = username; switchTab('profile'); }
 
         function renderProfile(username) {
@@ -763,7 +728,6 @@
             });
         }
 
-        // POST SAVE & MULTI FILE
         function openNewPostModal() {
             if (!store.isAdmin) return;
             editingPostId = null;
