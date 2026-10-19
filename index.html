@@ -91,7 +91,6 @@
             <header class="md:hidden sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex justify-between items-center z-30">
                 <h1 class="text-xl font-bold font-serif italic text-pink-600 cursor-pointer" onclick="switchTab('feed')">Teezgram</h1>
                 <div class="flex items-center gap-2">
-                    <!-- 모바일 상단 모드 전환 버튼 -->
                     <button onclick="openModeSelectModal()" id="mobile-admin-text" class="text-xs bg-pink-50 text-pink-600 px-2.5 py-1 rounded-full font-bold border border-pink-200 shadow-sm active:scale-95 transition">독자모드</button>
                     <button onclick="switchTab('dm')" class="text-xl text-gray-700 px-1"><i class="fa-regular fa-paper-plane"></i></button>
                 </div>
@@ -173,13 +172,16 @@
                                 <button onclick="openEditProfileModal()" id="admin-edit-profile-btn" class="hidden px-4 py-1.5 bg-gray-100 hover:bg-gray-200 font-semibold text-sm rounded-lg transition">
                                     프로필 편집 (관리자)
                                 </button>
+                                <button onclick="handleDeleteAccount()" id="admin-delete-account-btn" class="hidden px-4 py-1.5 bg-red-100 hover:bg-red-200 text-red-600 font-semibold text-sm rounded-lg transition">
+                                    캐릭터 삭제 (관리자)
+                                </button>
                                 <button onclick="handleToggleFollow()" id="profile-follow-btn" class="px-4 py-1.5 bg-sky-500 hover:bg-sky-600 text-white font-semibold text-sm rounded-lg transition">
                                     팔로우
                                 </button>
                             </div>
                         </div>
 
-                        <!-- 모바일에서도 접근 가능한 관리자 작성/추가 버튼 모음 -->
+                        <!-- 모바일 관리자 작성 및 캐릭터 관리 액션 버튼 그룹 -->
                         <div id="mobile-admin-actions" class="hidden flex flex-wrap gap-2 justify-center sm:justify-start pt-1">
                             <button onclick="openNewStoryModal()" class="px-3 py-1.5 bg-amber-500 text-white text-xs font-bold rounded-lg shadow-sm">➕ 스토리 올리기</button>
                             <button onclick="openNewPostModal()" class="px-3 py-1.5 bg-pink-500 text-white text-xs font-bold rounded-lg shadow-sm">➕ 피드 올리기</button>
@@ -704,7 +706,8 @@
         function updateAdminUI() {
             const adminBtns = [
                 'admin-create-btn-side', 'admin-create-btn-top',
-                'admin-create-account-btn-side', 'admin-story-btn-side', 'admin-edit-profile-btn'
+                'admin-create-account-btn-side', 'admin-story-btn-side', 
+                'admin-edit-profile-btn', 'admin-delete-account-btn'
             ];
             adminBtns.forEach(id => {
                 const el = document.getElementById(id);
