@@ -155,7 +155,7 @@
                                 <button onclick="openEditProfileModal()" id="admin-edit-profile-btn" class="hidden px-4 py-1.5 bg-gray-100 hover:bg-gray-200 font-semibold text-sm rounded-lg transition">
                                     프로필 편집 (관리자)
                                 </button>
-                                <button onclick="toggleFollow()" id="profile-follow-btn" class="px-4 py-1.5 bg-sky-500 hover:bg-sky-600 text-white font-semibold text-sm rounded-lg transition">
+                                <button onclick="handleToggleFollow()" id="profile-follow-btn" class="px-4 py-1.5 bg-sky-500 hover:bg-sky-600 text-white font-semibold text-sm rounded-lg transition">
                                     팔로우
                                 </button>
                             </div>
@@ -199,12 +199,20 @@
                     <span id="story-view-username" class="font-semibold text-sm">username</span>
                     <span id="story-view-time" class="text-xs text-gray-300 ml-1">시간</span>
                 </div>
-                <button onclick="closeModal('modal-story-viewer')" class="text-white text-xl"><i class="fa-solid fa-xmark"></i></button>
+                <div class="flex items-center gap-2">
+                    <button id="admin-story-edit-btn" onclick="openEditStoryModal()" class="hidden text-amber-400 text-sm font-semibold px-2 py-1 bg-amber-950/60 rounded">수정/삭제</button>
+                    <button onclick="closeModal('modal-story-viewer')" class="text-white text-xl"><i class="fa-solid fa-xmark"></i></button>
+                </div>
             </div>
 
             <!-- Story Image -->
             <div class="absolute inset-0 flex items-center justify-center">
                 <img id="story-view-img" src="" class="w-full h-full object-cover">
+            </div>
+
+            <!-- Reaction List Overlay -->
+            <div id="story-reactions-display" class="relative z-10 bg-black/50 text-white text-xs p-2 rounded-lg max-h-20 overflow-y-auto hide-scrollbar space-y-1">
+                <!-- Reactions inserted dynamically -->
             </div>
 
             <!-- Emoji Reaction Bar -->
@@ -216,59 +224,46 @@
                 <button onclick="sendStoryEmoji('😢')">😢</button>
                 <button onclick="sendStoryEmoji('👏')">👏</button>
             </div>
-            <!-- Reaction Float Effect Container -->
             <div id="story-emoji-float" class="absolute inset-0 pointer-events-none z-20 overflow-hidden"></div>
         </div>
     </div>
 
-    <!-- MODAL: CREATE STORY -->
+    <!-- MODAL: CREATE / EDIT STORY -->
     <div id="modal-new-story" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-xl max-w-md w-full p-6 space-y-4 shadow-xl">
             <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="font-bold">새 스토리 올리기</h3>
+                <h3 id="story-modal-title" class="font-bold">새 스토리 올리기</h3>
                 <button onclick="closeModal('modal-new-story')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
-            <form onsubmit="handleCreateStory(event)" class="space-y-3">
+            <form onsubmit="handleSaveStory(event)" class="space-y-3">
                 <div>
                     <label class="block text-xs font-semibold text-gray-500 mb-1">캐릭터 계정</label>
                     <select id="story-author-select" class="w-full border rounded-lg p-2 text-sm bg-white"></select>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-500 mb-1">스토리 사진 첨부</label>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">스토리 사진 파일 첨부</label>
                     <input type="file" id="story-image-file" accept="image/*" class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-500 mb-1">업로드 시간 표기</label>
                     <input type="text" id="story-time-input" value="3시간 전" placeholder="예: 방금 전, 10분 전" class="w-full border rounded-lg p-2 text-sm">
                 </div>
-                <button type="submit" class="w-full py-2 bg-amber-500 text-white rounded-lg font-semibold hover:bg-amber-600">스토리 올리기</button>
+                <div class="flex gap-2 pt-2">
+                    <button type="button" id="story-delete-btn" onclick="handleDeleteCurrentStory()" class="hidden py-2 px-4 bg-red-100 text-red-600 rounded-lg text-xs font-semibold hover:bg-red-200">🗑️ 삭제</button>
+                    <button type="submit" class="flex-1 py-2 bg-amber-500 text-white rounded-lg font-semibold hover:bg-amber-600">저장하기</button>
+                </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL: ADMIN LOGIN -->
-    <div id="modal-admin" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl max-w-sm w-full p-6 space-y-4 shadow-xl">
-            <h3 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-user-shield text-pink-500"></i> 작가 관리자 로그인</h3>
-            <div>
-                <label class="block text-xs font-semibold text-gray-500 mb-1">관리자 비밀번호</label>
-                <input type="password" id="admin-password-input" placeholder="기본 비밀번호: 1234" class="w-full border rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500">
-            </div>
-            <div class="flex gap-2">
-                <button onclick="toggleAdminModal()" class="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-semibold">취소</button>
-                <button onclick="loginAdmin()" class="flex-1 py-2 bg-pink-500 text-white rounded-lg text-sm font-semibold hover:bg-pink-600">확인</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: CREATE NEW POST -->
+    <!-- MODAL: CREATE / EDIT POST -->
     <div id="modal-new-post" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-xl max-w-lg w-full p-6 space-y-4 shadow-xl max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="font-bold">새 피드 올리기</h3>
+                <h3 id="post-modal-title" class="font-bold">새 피드 올리기</h3>
                 <button onclick="closeModal('modal-new-post')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
-            <form onsubmit="handleCreatePost(event)" class="space-y-4">
+            <form onsubmit="handleSavePost(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold text-gray-500 mb-1">작성 계정</label>
                     <select id="post-author-select" class="w-full border rounded-lg p-2 text-sm bg-white"></select>
@@ -291,8 +286,26 @@
                         <input type="text" id="post-time" value="방금 전" class="w-full border rounded-lg p-2 text-sm">
                     </div>
                 </div>
-                <button type="submit" class="w-full py-2.5 bg-pink-600 text-white rounded-lg font-semibold hover:bg-pink-700">게시하기</button>
+                <div class="flex gap-2">
+                    <button type="button" id="post-delete-btn" onclick="handleDeleteCurrentPost()" class="hidden py-2.5 px-4 bg-red-100 text-red-600 rounded-lg text-xs font-semibold hover:bg-red-200">🗑️ 삭제</button>
+                    <button type="submit" class="flex-1 py-2.5 bg-pink-600 text-white rounded-lg font-semibold hover:bg-pink-700">게시물 저장</button>
+                </div>
             </form>
+        </div>
+    </div>
+
+    <!-- MODAL: ADMIN LOGIN -->
+    <div id="modal-admin" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-sm w-full p-6 space-y-4 shadow-xl">
+            <h3 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-user-shield text-pink-500"></i> 작가 관리자 로그인</h3>
+            <div>
+                <label class="block text-xs font-semibold text-gray-500 mb-1">관리자 비밀번호</label>
+                <input type="password" id="admin-password-input" placeholder="기본 비밀번호: 1234" class="w-full border rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500">
+            </div>
+            <div class="flex gap-2">
+                <button onclick="toggleAdminModal()" class="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-semibold">취소</button>
+                <button onclick="loginAdmin()" class="flex-1 py-2 bg-pink-500 text-white rounded-lg text-sm font-semibold hover:bg-pink-600">확인</button>
+            </div>
         </div>
     </div>
 
@@ -364,9 +377,12 @@
                 <img id="detail-img" src="" class="max-h-[70vh] object-contain w-full">
             </div>
             <div class="md:w-2/5 flex flex-col p-4 bg-white">
-                <div class="flex items-center gap-3 border-b pb-3">
-                    <img id="detail-avatar" src="" class="w-8 h-8 rounded-full object-cover">
-                    <span id="detail-username" class="font-semibold text-sm cursor-pointer hover:underline" onclick="closeModal('modal-post-detail')">username</span>
+                <div class="flex items-center justify-between border-b pb-3">
+                    <div class="flex items-center gap-3">
+                        <img id="detail-avatar" src="" class="w-8 h-8 rounded-full object-cover">
+                        <span id="detail-username" class="font-semibold text-sm cursor-pointer hover:underline" onclick="closeModal('modal-post-detail')">username</span>
+                    </div>
+                    <button id="admin-post-edit-btn" onclick="openEditPostModalFromDetail()" class="hidden text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">수정/삭제</button>
                 </div>
                 <div class="flex-1 overflow-y-auto py-3 space-y-3 text-sm border-b">
                     <div id="detail-caption" class="text-gray-800 whitespace-pre-line"></div>
@@ -423,9 +439,11 @@
             },
             stories: [
                 {
+                    id: 's1',
                     author: 'san_choi',
                     image: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&auto=format&fit=crop&q=80',
-                    time: '2시간 전'
+                    time: '2시간 전',
+                    reactions: [{ sender: 'wooyoung_j', emoji: '🔥' }]
                 }
             ],
             posts: [
@@ -448,13 +466,16 @@
             }
         };
 
-        let store = JSON.parse(localStorage.getItem('teezgram_v2_store')) || INITIAL_DATA;
+        let store = JSON.parse(localStorage.getItem('teezgram_v3_store')) || INITIAL_DATA;
         let activeTab = 'feed';
         let activeProfileId = 'san_choi';
         let currentDetailPostId = null;
+        let currentViewingStory = null;
+        let editingPostId = null;
+        let editingStoryId = null;
 
         function saveStore() {
-            localStorage.setItem('teezgram_v2_store', JSON.stringify(store));
+            localStorage.setItem('teezgram_v3_store', JSON.stringify(store));
         }
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -499,6 +520,12 @@
 
             document.getElementById('admin-status-text').innerText = store.isAdmin ? '관리자 모드 중 (클릭시 잠금)' : '독자 모드 (클릭하여 작가 로그인)';
             document.getElementById('admin-lock-icon').className = store.isAdmin ? 'fa-solid fa-unlock text-pink-500' : 'fa-solid fa-lock';
+            
+            const storyEditBtn = document.getElementById('admin-story-edit-btn');
+            if (storyEditBtn) storyEditBtn.classList.toggle('hidden', !store.isAdmin);
+
+            const postEditBtn = document.getElementById('admin-post-edit-btn');
+            if (postEditBtn) postEditBtn.classList.toggle('hidden', !store.isAdmin);
         }
 
         // TABS
@@ -530,6 +557,7 @@
                             <img src="${authorAcc.avatar}" class="w-8 h-8 rounded-full object-cover">
                             <span class="font-semibold text-sm hover:underline">${authorAcc.username}</span>
                         </div>
+                        ${store.isAdmin ? `<button onclick="openEditPostModal('${post.id}')" class="text-gray-500 px-2"><i class="fa-solid fa-ellipsis"></i></button>` : ''}
                     </div>
                     <div class="bg-black flex items-center justify-center max-h-[500px]">
                         <img src="${post.image}" class="w-full object-cover max-h-[500px]" onclick="openPostDetail('${post.id}')">
@@ -561,7 +589,7 @@
             });
         }
 
-        // STORIES
+        // STORIES & EMOJI REACTIONS
         function renderStories() {
             const container = document.getElementById('stories-container');
             container.innerHTML = '';
@@ -584,15 +612,44 @@
         }
 
         function openStoryViewer(story) {
+            currentViewingStory = story;
             const acc = store.accounts[story.author] || { username: story.author, avatar: '' };
             document.getElementById('story-view-avatar').src = acc.avatar;
             document.getElementById('story-view-username').innerText = acc.username;
             document.getElementById('story-view-time').innerText = story.time;
             document.getElementById('story-view-img').src = story.image;
+
+            renderStoryReactions();
+            updateAdminUI();
             document.getElementById('modal-story-viewer').classList.remove('hidden');
         }
 
+        function renderStoryReactions() {
+            if (!currentViewingStory) return;
+            const container = document.getElementById('story-reactions-display');
+            const reactions = currentViewingStory.reactions || [];
+            if (reactions.length === 0) {
+                container.innerHTML = `<div class="text-gray-400 text-center text-[11px]">남겨진 반응이 없습니다.</div>`;
+            } else {
+                container.innerHTML = reactions.map(r => `
+                    <div class="flex items-center justify-between"><span class="font-semibold cursor-pointer hover:underline" onclick="closeModal('modal-story-viewer'); viewProfile('${r.sender}')">@${r.sender}</span><span>${r.emoji}</span></div>
+                `).join('');
+            }
+        }
+
         function sendStoryEmoji(emoji) {
+            if (!currentViewingStory) return;
+            if (!currentViewingStory.reactions) currentViewingStory.reactions = [];
+
+            currentViewingStory.reactions.unshift({
+                sender: store.currentAccount,
+                emoji: emoji
+            });
+
+            saveStore();
+            renderStoryReactions();
+
+            // Bounce animation
             const container = document.getElementById('story-emoji-float');
             const el = document.createElement('div');
             el.innerText = emoji;
@@ -605,33 +662,296 @@
 
         function openNewStoryModal() {
             if (!store.isAdmin) return;
+            editingStoryId = null;
+            document.getElementById('story-modal-title').innerText = '새 스토리 올리기';
+            document.getElementById('story-delete-btn').classList.add('hidden');
             document.getElementById('modal-new-story').classList.remove('hidden');
         }
 
-        function handleCreateStory(e) {
+        function openEditStoryModal() {
+            if (!currentViewingStory || !store.isAdmin) return;
+            editingStoryId = currentViewingStory.id;
+            document.getElementById('story-modal-title').innerText = '스토리 수정/삭제';
+            document.getElementById('story-author-select').value = currentViewingStory.author;
+            document.getElementById('story-time-input').value = currentViewingStory.time;
+            document.getElementById('story-delete-btn').classList.remove('hidden');
+            document.getElementById('modal-new-story').classList.remove('hidden');
+        }
+
+        function handleSaveStory(e) {
             e.preventDefault();
             const author = document.getElementById('story-author-select').value;
             const fileInput = document.getElementById('story-image-file');
             const time = document.getElementById('story-time-input').value.trim() || '방금 전';
 
-            const saveAndClose = (imgSrc) => {
-                store.stories = store.stories.filter(s => s.author !== author);
-                store.stories.unshift({ author, image: imgSrc, time });
+            const processSave = (imgSrc) => {
+                if (editingStoryId) {
+                    const story = store.stories.find(s => s.id === editingStoryId);
+                    if (story) {
+                        story.author = author;
+                        story.time = time;
+                        if (imgSrc) story.image = imgSrc;
+                    }
+                } else {
+                    store.stories = store.stories.filter(s => s.author !== author);
+                    store.stories.unshift({ id: 's_' + Date.now(), author, image: imgSrc || 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600', time, reactions: [] });
+                }
                 saveStore();
                 renderStories();
                 closeModal('modal-new-story');
+                closeModal('modal-story-viewer');
+            };
+
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (evt) => processSave(evt.target.result);
+                reader.readAsDataURL(fileInput.files[0]);
+            } else processSave(null);
+        }
+
+        function handleDeleteCurrentStory() {
+            if (!editingStoryId || !store.isAdmin) return;
+            if (confirm('이 스토리를 삭제하시겠습니까?')) {
+                store.stories = store.stories.filter(s => s.id !== editingStoryId);
+                saveStore();
+                renderStories();
+                closeModal('modal-new-story');
+                closeModal('modal-story-viewer');
+            }
+        }
+
+        // FOLLOW / UNFOLLOW SYSTEM
+        function handleToggleFollow() {
+            const currentAcc = store.accounts[store.currentAccount];
+            const targetAcc = store.accounts[activeProfileId];
+            if (!currentAcc || !targetAcc || store.currentAccount === activeProfileId) return;
+
+            if (!currentAcc.following) currentAcc.following = [];
+            if (!targetAcc.followers) targetAcc.followers = [];
+
+            const isFollowing = currentAcc.following.includes(activeProfileId);
+
+            if (isFollowing) {
+                currentAcc.following = currentAcc.following.filter(u => u !== activeProfileId);
+                targetAcc.followers = targetAcc.followers.filter(u => u !== store.currentAccount);
+            } else {
+                currentAcc.following.push(activeProfileId);
+                targetAcc.followers.push(store.currentAccount);
+            }
+
+            saveStore();
+            renderProfile(activeProfileId);
+        }
+
+        // PROFILE & DELETE ACCOUNT
+        function viewProfile(username) { activeProfileId = username; switchTab('profile'); }
+
+        function renderProfile(username) {
+            const acc = store.accounts[username] || { username, fullName: username, avatar: '', bio: '', followers: [], following: [] };
+            document.getElementById('profile-avatar').src = acc.avatar;
+            document.getElementById('profile-username').innerText = acc.username;
+            document.getElementById('profile-fullname').innerText = acc.fullName;
+            document.getElementById('profile-bio').innerText = acc.bio;
+
+            const userPosts = store.posts.filter(p => p.author === username);
+            document.getElementById('profile-posts-count').innerText = userPosts.length;
+            document.getElementById('profile-followers-count').innerText = acc.followers ? acc.followers.length : 0;
+            document.getElementById('profile-following-count').innerText = acc.following ? acc.following.length : 0;
+
+            const followBtn = document.getElementById('profile-follow-btn');
+            if (username === store.currentAccount) {
+                followBtn.classList.add('hidden');
+            } else {
+                followBtn.classList.remove('hidden');
+                const isFollowing = (store.accounts[store.currentAccount].following || []).includes(username);
+                followBtn.innerText = isFollowing ? '팔로잉' : '팔로우';
+                followBtn.className = isFollowing ? 'px-4 py-1.5 bg-gray-200 text-gray-800 font-semibold text-sm rounded-lg transition' : 'px-4 py-1.5 bg-sky-500 hover:bg-sky-600 text-white font-semibold text-sm rounded-lg transition';
+            }
+
+            const grid = document.getElementById('profile-posts-grid');
+            grid.innerHTML = '';
+            userPosts.forEach(post => {
+                const item = document.createElement('div');
+                item.className = 'aspect-square relative group cursor-pointer overflow-hidden bg-gray-100';
+                item.innerHTML = `<img src="${post.image}" class="w-full h-full object-cover">`;
+                item.onclick = () => openPostDetail(post.id);
+                grid.appendChild(item);
+            });
+        }
+
+        function handleDeleteCurrentAccount() {
+            if (!store.isAdmin) return;
+            if (Object.keys(store.accounts).length <= 1) {
+                alert('최소 1개의 캐릭터 계정은 존재해야 합니다.');
+                return;
+            }
+            if (confirm(`정말로 @${activeProfileId} 캐릭터 계정을 삭제하시겠습니까?`)) {
+                delete store.accounts[activeProfileId];
+                store.posts = store.posts.filter(p => p.author !== activeProfileId);
+                store.stories = store.stories.filter(s => s.author !== activeProfileId);
+                
+                const remainingAccs = Object.keys(store.accounts);
+                store.currentAccount = remainingAccs[0];
+                activeProfileId = remainingAccs[0];
+
+                saveStore();
+                renderAccountSwitcher();
+                renderStories();
+                closeModal('modal-edit-profile');
+                viewProfile(activeProfileId);
+            }
+        }
+
+        function openEditProfileModal() {
+            const acc = store.accounts[activeProfileId];
+            if (!acc) return;
+            document.getElementById('edit-username').value = acc.username;
+            document.getElementById('edit-fullname').value = acc.fullName || '';
+            document.getElementById('edit-bio').value = acc.bio || '';
+            document.getElementById('modal-edit-profile').classList.remove('hidden');
+        }
+
+        function handleSaveProfile(e) {
+            e.preventDefault();
+            const newUsername = document.getElementById('edit-username').value.trim().toLowerCase();
+            const fullName = document.getElementById('edit-fullname').value.trim();
+            const bio = document.getElementById('edit-bio').value.trim();
+            const fileInput = document.getElementById('edit-avatar-file');
+
+            const applyChanges = (avatarSrc) => {
+                const oldUsername = activeProfileId;
+                const acc = store.accounts[oldUsername];
+                
+                if (newUsername !== oldUsername) {
+                    store.accounts[newUsername] = { username: newUsername, fullName, avatar: avatarSrc || acc.avatar, bio, followers: acc.followers, following: acc.following };
+                    delete store.accounts[oldUsername];
+                    store.posts.forEach(p => { if (p.author === oldUsername) p.author = newUsername; });
+                    if (store.currentAccount === oldUsername) store.currentAccount = newUsername;
+                    activeProfileId = newUsername;
+                } else {
+                    acc.fullName = fullName;
+                    acc.bio = bio;
+                    if (avatarSrc) acc.avatar = avatarSrc;
+                }
+
+                saveStore();
+                renderAccountSwitcher();
+                renderStories();
+                renderProfile(activeProfileId);
+                closeModal('modal-edit-profile');
+            };
+
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (evt) => applyChanges(evt.target.result);
+                reader.readAsDataURL(fileInput.files[0]);
+            } else applyChanges(null);
+        }
+
+        // POST CREATE & EDIT & DELETE
+        function openNewPostModal() {
+            if (!store.isAdmin) return;
+            editingPostId = null;
+            document.getElementById('post-modal-title').innerText = '새 피드 올리기';
+            document.getElementById('post-delete-btn').classList.add('hidden');
+            document.getElementById('post-caption').value = '';
+            document.getElementById('modal-new-post').classList.remove('hidden');
+        }
+
+        function openEditPostModal(postId) {
+            if (!store.isAdmin) return;
+            const post = store.posts.find(p => p.id === postId);
+            if (!post) return;
+            editingPostId = postId;
+            document.getElementById('post-modal-title').innerText = '게시물 수정/삭제';
+            document.getElementById('post-author-select').value = post.author;
+            document.getElementById('post-caption').value = post.caption;
+            document.getElementById('post-likes').value = post.likes;
+            document.getElementById('post-time').value = post.time;
+            document.getElementById('post-delete-btn').classList.remove('hidden');
+            document.getElementById('modal-new-post').classList.remove('hidden');
+        }
+
+        function openEditPostModalFromDetail() {
+            if (currentDetailPostId) {
+                closeModal('modal-post-detail');
+                openEditPostModal(currentDetailPostId);
+            }
+        }
+
+        function handleSavePost(e) {
+            e.preventDefault();
+            const author = document.getElementById('post-author-select').value;
+            const caption = document.getElementById('post-caption').value.trim();
+            const likes = parseInt(document.getElementById('post-likes').value) || 100;
+            const time = document.getElementById('post-time').value.trim() || '방금 전';
+            const fileInput = document.getElementById('post-image-file');
+
+            const processSave = (imgSrc) => {
+                if (editingPostId) {
+                    const post = store.posts.find(p => p.id === editingPostId);
+                    if (post) {
+                        post.author = author;
+                        post.caption = caption;
+                        post.likes = likes;
+                        post.time = time;
+                        if (imgSrc) post.image = imgSrc;
+                    }
+                } else {
+                    store.posts.unshift({ id: 'p_' + Date.now(), author, image: imgSrc || 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600', caption, likes, likedByMe: false, time, comments: [] });
+                }
+                saveStore();
+                closeModal('modal-new-post');
+                switchTab('feed');
+            };
+
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (evt) => processSave(evt.target.result);
+                reader.readAsDataURL(fileInput.files[0]);
+            } else processSave(null);
+        }
+
+        function handleDeleteCurrentPost() {
+            if (!editingPostId || !store.isAdmin) return;
+            if (confirm('이 게시글을 삭제하시겠습니까?')) {
+                store.posts = store.posts.filter(p => p.id !== editingPostId);
+                saveStore();
+                closeModal('modal-new-post');
+                switchTab('feed');
+            }
+        }
+
+        // CREATE ACCOUNT
+        function openNewAccountModal() {
+            if (!store.isAdmin) return;
+            document.getElementById('modal-new-account').classList.remove('hidden');
+        }
+
+        function handleCreateAccount(e) {
+            e.preventDefault();
+            const username = document.getElementById('new-acc-username').value.trim().toLowerCase();
+            const fullName = document.getElementById('new-acc-fullname').value.trim();
+            const bio = document.getElementById('new-acc-bio').value.trim();
+            const fileInput = document.getElementById('new-acc-avatar-file');
+
+            const saveAndClose = (avatarSrc) => {
+                store.accounts[username] = { username, fullName, avatar: avatarSrc, bio, followers: [], following: [] };
+                saveStore();
+                renderAccountSwitcher();
+                renderStories();
+                closeModal('modal-new-account');
+                viewProfile(username);
             };
 
             if (fileInput.files && fileInput.files[0]) {
                 const reader = new FileReader();
                 reader.onload = (evt) => saveAndClose(evt.target.result);
                 reader.readAsDataURL(fileInput.files[0]);
-            } else {
-                saveAndClose('https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600');
-            }
+            } else saveAndClose('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150');
         }
 
-        // DM
+        // DM & ACCOUNT SWITCHER
         function renderDmView() {
             document.getElementById('dm-current-account-label').innerText = store.currentAccount;
             const listContainer = document.getElementById('dm-conversations-list');
@@ -686,164 +1006,6 @@
             renderDmView();
         }
 
-        // PROFILE & DELETE ACCOUNT
-        function viewProfile(username) { activeProfileId = username; switchTab('profile'); }
-
-        function renderProfile(username) {
-            const acc = store.accounts[username] || { username, fullName: username, avatar: '', bio: '' };
-            document.getElementById('profile-avatar').src = acc.avatar;
-            document.getElementById('profile-username').innerText = acc.username;
-            document.getElementById('profile-fullname').innerText = acc.fullName;
-            document.getElementById('profile-bio').innerText = acc.bio;
-
-            const userPosts = store.posts.filter(p => p.author === username);
-            document.getElementById('profile-posts-count').innerText = userPosts.length;
-
-            const grid = document.getElementById('profile-posts-grid');
-            grid.innerHTML = '';
-            userPosts.forEach(post => {
-                const item = document.createElement('div');
-                item.className = 'aspect-square relative group cursor-pointer overflow-hidden bg-gray-100';
-                item.innerHTML = `<img src="${post.image}" class="w-full h-full object-cover">`;
-                item.onclick = () => openPostDetail(post.id);
-                grid.appendChild(item);
-            });
-        }
-
-        function handleDeleteCurrentAccount() {
-            if (!store.isAdmin) return;
-            if (Object.keys(store.accounts).length <= 1) {
-                alert('최소 1개의 캐릭터 계정은 존재해야 합니다.');
-                return;
-            }
-            if (confirm(`정말로 @${activeProfileId} 캐릭터 계정을 삭제하시겠습니까?`)) {
-                delete store.accounts[activeProfileId];
-                store.posts = store.posts.filter(p => p.author !== activeProfileId);
-                store.stories = store.stories.filter(s => s.author !== activeProfileId);
-                
-                const remainingAccs = Object.keys(store.accounts);
-                store.currentAccount = remainingAccs[0];
-                activeProfileId = remainingAccs[0];
-
-                saveStore();
-                renderAccountSwitcher();
-                renderStories();
-                closeModal('modal-edit-profile');
-                viewProfile(activeProfileId);
-                alert('캐릭터 계정이 삭제되었습니다.');
-            }
-        }
-
-        function openEditProfileModal() {
-            const acc = store.accounts[activeProfileId];
-            if (!acc) return;
-            document.getElementById('edit-username').value = acc.username;
-            document.getElementById('edit-fullname').value = acc.fullName || '';
-            document.getElementById('edit-bio').value = acc.bio || '';
-            document.getElementById('modal-edit-profile').classList.remove('hidden');
-        }
-
-        function handleSaveProfile(e) {
-            e.preventDefault();
-            const newUsername = document.getElementById('edit-username').value.trim().toLowerCase();
-            const fullName = document.getElementById('edit-fullname').value.trim();
-            const bio = document.getElementById('edit-bio').value.trim();
-            const fileInput = document.getElementById('edit-avatar-file');
-
-            const applyChanges = (avatarSrc) => {
-                const oldUsername = activeProfileId;
-                const acc = store.accounts[oldUsername];
-                
-                if (newUsername !== oldUsername) {
-                    store.accounts[newUsername] = { username: newUsername, fullName, avatar: avatarSrc || acc.avatar, bio };
-                    delete store.accounts[oldUsername];
-                    store.posts.forEach(p => { if (p.author === oldUsername) p.author = newUsername; });
-                    if (store.currentAccount === oldUsername) store.currentAccount = newUsername;
-                    activeProfileId = newUsername;
-                } else {
-                    acc.fullName = fullName;
-                    acc.bio = bio;
-                    if (avatarSrc) acc.avatar = avatarSrc;
-                }
-
-                saveStore();
-                renderAccountSwitcher();
-                renderStories();
-                renderProfile(activeProfileId);
-                closeModal('modal-edit-profile');
-            };
-
-            if (fileInput.files && fileInput.files[0]) {
-                const reader = new FileReader();
-                reader.onload = (evt) => applyChanges(evt.target.result);
-                reader.readAsDataURL(fileInput.files[0]);
-            } else {
-                applyChanges(null);
-            }
-        }
-
-        // CREATE POST
-        function openNewPostModal() {
-            if (!store.isAdmin) return;
-            document.getElementById('modal-new-post').classList.remove('hidden');
-        }
-
-        function handleCreatePost(e) {
-            e.preventDefault();
-            const author = document.getElementById('post-author-select').value;
-            const caption = document.getElementById('post-caption').value.trim();
-            const likes = parseInt(document.getElementById('post-likes').value) || 100;
-            const time = document.getElementById('post-time').value.trim() || '방금 전';
-            const fileInput = document.getElementById('post-image-file');
-
-            const saveAndClose = (imgSrc) => {
-                store.posts.unshift({ id: 'p_' + Date.now(), author, image: imgSrc, caption, likes, likedByMe: false, time, comments: [] });
-                saveStore();
-                closeModal('modal-new-post');
-                switchTab('feed');
-            };
-
-            if (fileInput.files && fileInput.files[0]) {
-                const reader = new FileReader();
-                reader.onload = (evt) => saveAndClose(evt.target.result);
-                reader.readAsDataURL(fileInput.files[0]);
-            } else {
-                saveAndClose('https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600');
-            }
-        }
-
-        // CREATE ACCOUNT
-        function openNewAccountModal() {
-            if (!store.isAdmin) return;
-            document.getElementById('modal-new-account').classList.remove('hidden');
-        }
-
-        function handleCreateAccount(e) {
-            e.preventDefault();
-            const username = document.getElementById('new-acc-username').value.trim().toLowerCase();
-            const fullName = document.getElementById('new-acc-fullname').value.trim();
-            const bio = document.getElementById('new-acc-bio').value.trim();
-            const fileInput = document.getElementById('new-acc-avatar-file');
-
-            const saveAndClose = (avatarSrc) => {
-                store.accounts[username] = { username, fullName, avatar: avatarSrc, bio, followers: [], following: [] };
-                saveStore();
-                renderAccountSwitcher();
-                renderStories();
-                closeModal('modal-new-account');
-                viewProfile(username);
-            };
-
-            if (fileInput.files && fileInput.files[0]) {
-                const reader = new FileReader();
-                reader.onload = (evt) => saveAndClose(evt.target.result);
-                reader.readAsDataURL(fileInput.files[0]);
-            } else {
-                saveAndClose('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150');
-            }
-        }
-
-        // ACCOUNT SWITCHER
         function renderAccountSwitcher() {
             const container = document.getElementById('account-switcher');
             const selectPost = document.getElementById('post-author-select');
@@ -859,7 +1021,8 @@
                     store.currentAccount = acc.username;
                     saveStore();
                     renderAccountSwitcher();
-                    viewProfile(acc.username);
+                    if (activeTab === 'profile') renderProfile(activeProfileId);
+                    else if (activeTab === 'dm') renderDmView();
                 };
                 btn.innerHTML = `<img src="${acc.avatar}" class="w-5 h-5 rounded-full object-cover"><span class="truncate">${acc.username}</span>`;
                 container.appendChild(btn);
@@ -876,7 +1039,25 @@
             }
         }
 
-        // UTILS
+        // UTILS & RELATIONSHIPS
+        function openRelationshipsModal(type) {
+            const acc = store.accounts[activeProfileId];
+            if (!acc) return;
+            const list = type === 'followers' ? (acc.followers || []) : (acc.following || []);
+            document.getElementById('rel-modal-title').innerText = type === 'followers' ? '팔로워' : '팔로잉';
+            const container = document.getElementById('rel-modal-list');
+            container.innerHTML = '';
+            list.forEach(u => {
+                const tAcc = store.accounts[u] || { username: u, avatar: '' };
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between cursor-pointer hover:bg-gray-50 p-1 rounded';
+                div.onclick = () => { closeModal('modal-relationships'); viewProfile(u); };
+                div.innerHTML = `<div class="flex items-center gap-2"><img src="${tAcc.avatar}" class="w-8 h-8 rounded-full object-cover"><span class="text-xs font-semibold">${u}</span></div><span class="text-xs bg-gray-100 px-2 py-1 rounded">보기</span>`;
+                container.appendChild(div);
+            });
+            document.getElementById('modal-relationships').classList.remove('hidden');
+        }
+
         function toggleLike(postId) {
             const post = store.posts.find(p => p.id === postId);
             if (post) {
@@ -901,6 +1082,7 @@
 
             const commentsContainer = document.getElementById('detail-comments-list');
             commentsContainer.innerHTML = post.comments.map(c => `<div><b>${c.author}</b> <span>${formatMentionsAndTags(c.text)}</span></div>`).join('');
+            updateAdminUI();
             document.getElementById('modal-post-detail').classList.remove('hidden');
         }
 
