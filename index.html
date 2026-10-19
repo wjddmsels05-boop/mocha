@@ -143,8 +143,8 @@
 
             <!-- VIEW 4: PROFILE -->
             <div id="view-profile" class="hidden max-w-4xl mx-auto py-6 px-4">
-                <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-12 mb-8 border-b border-gray-200 pb-8">
-                    <div class="w-24 h-24 sm:w-36 sm:h-36 rounded-full p-1 story-ring cursor-pointer">
+                <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-12 mb-6 border-b border-gray-200 pb-6">
+                    <div class="w-24 h-24 sm:w-36 sm:h-36 rounded-full p-1 story-ring cursor-pointer" onclick="openProfileStory()">
                         <img id="profile-avatar" src="" class="w-full h-full object-cover rounded-full border-2 border-white">
                     </div>
 
@@ -173,6 +173,15 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Story Highlights (스토리 보관함) Section -->
+                <div class="mb-8 border-b border-gray-200 pb-6">
+                    <h3 class="text-xs font-semibold text-gray-400 mb-3 uppercase tracking-wider">스토리 보관함 (하이라이트)</h3>
+                    <div id="profile-story-highlights" class="flex gap-4 overflow-x-auto hide-scrollbar">
+                        <!-- User's saved stories dynamically placed here -->
+                    </div>
+                </div>
+
                 <div id="profile-posts-grid" class="grid grid-cols-3 gap-1 sm:gap-4"></div>
             </div>
         </main>
@@ -451,11 +460,11 @@
                     id: 'p1',
                     author: 'san_choi',
                     image: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&auto=format&fit=crop&q=80',
-                    caption: '연습 끝나고 오랫만에 카페. @wooyoung_j #일상 ☕️',
+                    caption: '연습 끝나고 오랫만에 카페. @wooyoung_j #일상 #카페 ☕️',
                     likes: 342,
                     likedByMe: false,
                     time: '3시간 전',
-                    comments: [{ author: 'wooyoung_j', text: '다음엔 내가 사줄게 ㅋㅋㅋ' }]
+                    comments: [{ author: 'wooyoung_j', text: '다음엔 내가 사줄게 ㅋㅋㅋ #카페' }]
                 }
             ],
             dms: {
@@ -466,7 +475,7 @@
             }
         };
 
-        let store = JSON.parse(localStorage.getItem('teezgram_v3_store')) || INITIAL_DATA;
+        let store = JSON.parse(localStorage.getItem('teezgram_v4_store')) || INITIAL_DATA;
         let activeTab = 'feed';
         let activeProfileId = 'san_choi';
         let currentDetailPostId = null;
@@ -475,7 +484,7 @@
         let editingStoryId = null;
 
         function saveStore() {
-            localStorage.setItem('teezgram_v3_store', JSON.stringify(store));
+            localStorage.setItem('teezgram_v4_store', JSON.stringify(store));
         }
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -589,7 +598,24 @@
             });
         }
 
-        // STORIES & EMOJI REACTIONS
+        function filterExplore() {
+            const query = document.getElementById('explore-search-input').value.toLowerCase();
+            const items = document.querySelectorAll('#explore-grid-container > div');
+            items.forEach(el => {
+                el.style.display = el.innerText.toLowerCase().includes(query) || query === '' ? 'block' : 'none';
+            });
+        }
+
+        function searchHashtag(tag) {
+            switchTab('explore');
+            const searchInput = document.getElementById('explore-search-input');
+            if (searchInput) {
+                searchInput.value = '#' + tag;
+                filterExplore();
+            }
+        }
+
+        // STORIES & HIGHLIGHTS
         function renderStories() {
             const container = document.getElementById('stories-container');
             container.innerHTML = '';
@@ -609,6 +635,15 @@
                 `;
                 container.appendChild(div);
             });
+        }
+
+        function openProfileStory() {
+            const userStory = store.stories.find(s => s.author === activeProfileId);
+            if (userStory) {
+                openStoryViewer(userStory);
+            } else {
+                alert('현재 남아있는 실시간 스토리가 없습니다. 하단 보관함에서 지났던 스토리를 확인해보세요!');
+            }
         }
 
         function openStoryViewer(story) {
@@ -649,7 +684,6 @@
             saveStore();
             renderStoryReactions();
 
-            // Bounce animation
             const container = document.getElementById('story-emoji-float');
             const el = document.createElement('div');
             el.innerText = emoji;
@@ -693,11 +727,11 @@
                         if (imgSrc) story.image = imgSrc;
                     }
                 } else {
-                    store.stories = store.stories.filter(s => s.author !== author);
                     store.stories.unshift({ id: 's_' + Date.now(), author, image: imgSrc || 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600', time, reactions: [] });
                 }
                 saveStore();
                 renderStories();
+                if (activeTab === 'profile') renderProfile(activeProfileId);
                 closeModal('modal-new-story');
                 closeModal('modal-story-viewer');
             };
@@ -715,12 +749,13 @@
                 store.stories = store.stories.filter(s => s.id !== editingStoryId);
                 saveStore();
                 renderStories();
+                if (activeTab === 'profile') renderProfile(activeProfileId);
                 closeModal('modal-new-story');
                 closeModal('modal-story-viewer');
             }
         }
 
-        // FOLLOW / UNFOLLOW SYSTEM
+        // FOLLOW SYSTEM
         function handleToggleFollow() {
             const currentAcc = store.accounts[store.currentAccount];
             const targetAcc = store.accounts[activeProfileId];
@@ -743,7 +778,7 @@
             renderProfile(activeProfileId);
         }
 
-        // PROFILE & DELETE ACCOUNT
+        // PROFILE & HIGHLIGHTS
         function viewProfile(username) { activeProfileId = username; switchTab('profile'); }
 
         function renderProfile(username) {
@@ -766,6 +801,28 @@
                 const isFollowing = (store.accounts[store.currentAccount].following || []).includes(username);
                 followBtn.innerText = isFollowing ? '팔로잉' : '팔로우';
                 followBtn.className = isFollowing ? 'px-4 py-1.5 bg-gray-200 text-gray-800 font-semibold text-sm rounded-lg transition' : 'px-4 py-1.5 bg-sky-500 hover:bg-sky-600 text-white font-semibold text-sm rounded-lg transition';
+            }
+
+            // Render Highlights (Saved Stories)
+            const userStories = store.stories.filter(s => s.author === username);
+            const highlightContainer = document.getElementById('profile-story-highlights');
+            highlightContainer.innerHTML = '';
+
+            if (userStories.length === 0) {
+                highlightContainer.innerHTML = `<div class="text-xs text-gray-400 italic">보관된 스토리가 없습니다.</div>`;
+            } else {
+                userStories.forEach((st, idx) => {
+                    const item = document.createElement('div');
+                    item.className = 'flex flex-col items-center space-y-1 cursor-pointer min-w-[56px]';
+                    item.onclick = () => openStoryViewer(st);
+                    item.innerHTML = `
+                        <div class="w-14 h-14 rounded-full p-[2px] border-2 border-gray-300">
+                            <img src="${st.image}" class="w-full h-full object-cover rounded-full">
+                        </div>
+                        <span class="text-[10px] text-gray-600 truncate w-14 text-center">스토리 ${idx + 1}</span>
+                    `;
+                    highlightContainer.appendChild(item);
+                });
             }
 
             const grid = document.getElementById('profile-posts-grid');
@@ -826,6 +883,7 @@
                     store.accounts[newUsername] = { username: newUsername, fullName, avatar: avatarSrc || acc.avatar, bio, followers: acc.followers, following: acc.following };
                     delete store.accounts[oldUsername];
                     store.posts.forEach(p => { if (p.author === oldUsername) p.author = newUsername; });
+                    store.stories.forEach(s => { if (s.author === oldUsername) s.author = newUsername; });
                     if (store.currentAccount === oldUsername) store.currentAccount = newUsername;
                     activeProfileId = newUsername;
                 } else {
@@ -1086,11 +1144,30 @@
             document.getElementById('modal-post-detail').classList.remove('hidden');
         }
 
+        function handleAddDetailComment(e) {
+            e.preventDefault();
+            const input = document.getElementById('detail-comment-input');
+            const text = input.value.trim();
+            if (!text || !currentDetailPostId) return;
+            const post = store.posts.find(p => p.id === currentDetailPostId);
+            if (post) {
+                post.comments.push({ author: store.currentAccount, text });
+                saveStore();
+                input.value = '';
+                openPostDetail(currentDetailPostId);
+                renderFeed();
+            }
+        }
+
+        function toggleDetailLike() {
+            if (currentDetailPostId) toggleLike(currentDetailPostId);
+        }
+
         function formatMentionsAndTags(text) {
             if (!text) return '';
             return text
                 .replace(/@([a-zA-Z0-9_]+)/g, '<span class="text-pink-600 font-semibold cursor-pointer hover:underline" onclick="event.stopPropagation(); viewProfile(\'$1\')">@$1</span>')
-                .replace(/#([가-힣a-zA-Z0-9_]+)/g, '<span class="text-pink-600 font-semibold cursor-pointer hover:underline">#$1</span>');
+                .replace(/#([가-힣a-zA-Z0-9_]+)/g, '<span class="text-pink-600 font-semibold cursor-pointer hover:underline" onclick="event.stopPropagation(); searchHashtag(\'$1\')">#$1</span>');
         }
 
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
