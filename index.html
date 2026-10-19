@@ -181,13 +181,6 @@
                             </div>
                         </div>
 
-                        <!-- 모바일 관리자 작성 및 캐릭터 관리 액션 버튼 그룹 -->
-                        <div id="mobile-admin-actions" class="hidden flex flex-wrap gap-2 justify-center sm:justify-start pt-1">
-                            <button onclick="openNewStoryModal()" class="px-3 py-1.5 bg-amber-500 text-white text-xs font-bold rounded-lg shadow-sm">➕ 스토리 올리기</button>
-                            <button onclick="openNewPostModal()" class="px-3 py-1.5 bg-pink-500 text-white text-xs font-bold rounded-lg shadow-sm">➕ 피드 올리기</button>
-                            <button onclick="openNewAccountModal()" class="px-3 py-1.5 bg-purple-600 text-white text-xs font-bold rounded-lg shadow-sm">👤 캐릭터 추가</button>
-                        </div>
-
                         <div class="flex justify-center sm:justify-start gap-8 text-sm">
                             <div>게시물 <span id="profile-posts-count" class="font-semibold">0</span></div>
                             <div onclick="openFollowListModal('followers')" class="cursor-pointer hover:underline">팔로워 <span id="profile-followers-count" class="font-semibold">0</span></div>
@@ -224,16 +217,33 @@
                 <i class="fa-solid fa-compass text-lg"></i>
                 <span class="text-[10px] font-medium mt-0.5">탐색</span>
             </button>
-            <!-- 관리자 모드 전용 하단 타임캡슐 저장 버튼 -->
-            <button id="bottom-admin-save-btn" onclick="exportHtmlTimeCapsule()" class="hidden flex flex-col items-center text-pink-600 hover:text-pink-700">
-                <i class="fa-solid fa-file-arrow-down text-lg"></i>
-                <span class="text-[10px] font-bold mt-0.5">타임캡슐저장</span>
-            </button>
-            <!-- 관리자 모드 전용 하단 전체 리셋 버튼 -->
-            <button id="bottom-admin-reset-btn" onclick="handleFullReset()" class="hidden flex flex-col items-center text-red-500 hover:text-red-600">
-                <i class="fa-solid fa-rotate-right text-lg"></i>
-                <span class="text-[10px] font-bold mt-0.5">전체리셋</span>
-            </button>
+            
+            <!-- 관리자 모드 전용 하단 기타 메뉴 버튼 (...) -->
+            <div class="relative">
+                <button id="bottom-admin-menu-btn" onclick="toggleAdminMenuPopover()" class="hidden flex flex-col items-center text-gray-700 hover:text-pink-600">
+                    <i class="fa-solid fa-ellipsis text-lg"></i>
+                    <span class="text-[10px] font-bold mt-0.5">기타메뉴</span>
+                </button>
+                
+                <!-- 위로 짜라락 뜨는 팝업 메뉴 -->
+                <div id="admin-menu-popover" class="hidden absolute bottom-12 right-0 bg-white rounded-2xl shadow-2xl border border-gray-200 py-2 w-48 z-50 flex flex-col text-xs font-semibold">
+                    <button onclick="openNewAccountModal(); toggleAdminMenuPopover();" class="px-4 py-2.5 text-left hover:bg-gray-50 text-purple-600 flex items-center gap-2">
+                        <i class="fa-solid fa-user-plus w-4"></i> 새 캐릭터 추가
+                    </button>
+                    <button onclick="openNewPostModal(); toggleAdminMenuPopover();" class="px-4 py-2.5 text-left hover:bg-gray-50 text-pink-600 flex items-center gap-2">
+                        <i class="fa-regular fa-square-plus w-4"></i> 피드 올리기
+                    </button>
+                    <button onclick="openNewStoryModal(); toggleAdminMenuPopover();" class="px-4 py-2.5 text-left hover:bg-gray-50 text-amber-600 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-plus w-4"></i> 스토리 올리기
+                    </button>
+                    <button onclick="exportHtmlTimeCapsule(); toggleAdminMenuPopover();" class="px-4 py-2.5 text-left hover:bg-gray-50 text-sky-600 flex items-center gap-2 border-t">
+                        <i class="fa-solid fa-file-arrow-down w-4"></i> 타임캡슐 저장
+                    </button>
+                    <button onclick="handleFullReset(); toggleAdminMenuPopover();" class="px-4 py-2.5 text-left hover:bg-red-50 text-red-600 flex items-center gap-2 border-t">
+                        <i class="fa-solid fa-rotate-right w-4"></i> 전체 리셋
+                    </button>
+                </div>
+            </div>
         </nav>
     </div>
 
@@ -754,17 +764,12 @@
                 'admin-create-btn-side', 'admin-create-btn-top',
                 'admin-create-account-btn-side', 'admin-story-btn-side', 
                 'admin-edit-profile-btn', 'admin-delete-account-btn',
-                'bottom-admin-save-btn', 'bottom-admin-reset-btn'
+                'bottom-admin-menu-btn'
             ];
             adminBtns.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.classList.toggle('hidden', !store.isAdmin);
             });
-
-            const mobileActions = document.getElementById('mobile-admin-actions');
-            if (mobileActions) {
-                mobileActions.classList.toggle('hidden', !store.isAdmin);
-            }
 
             const statusText = document.getElementById('admin-status-text');
             const mobileText = document.getElementById('mobile-admin-text');
@@ -775,6 +780,8 @@
             } else {
                 if(statusText) statusText.innerText = '📖 독자 모드 중';
                 if(mobileText) mobileText.innerText = '독자모드';
+                // 독자 모드로 바뀌면 메뉴 팝업도 닫기
+                document.getElementById('admin-menu-popover').classList.add('hidden');
             }
 
             const storyInputBar = document.getElementById('story-reactions-input-bar');
@@ -792,12 +799,18 @@
             if (activeTab === 'dm') renderDmView();
         }
 
+        function toggleAdminMenuPopover() {
+            const popover = document.getElementById('admin-menu-popover');
+            if (popover) popover.classList.toggle('hidden');
+        }
+
         function switchTab(tab) {
             activeTab = tab;
             ['feed', 'explore', 'dm', 'profile'].forEach(t => {
                 document.getElementById('view-' + t).classList.add('hidden');
             });
             document.getElementById('view-' + tab).classList.remove('hidden');
+            document.getElementById('admin-menu-popover').classList.add('hidden');
 
             if (tab === 'feed') {
                 renderFeed();
@@ -1099,7 +1112,6 @@
             }
         }
 
-        // 🗑️ 캐릭터 삭제 시 모든 연관 데이터(DM, 게시물, 스토리, 팔로우 등) 깔끔하게 정돈하는 함수
         function handleDeleteAccount() {
             if (!store.isAdmin) return;
             const usernames = Object.keys(store.accounts);
@@ -1117,12 +1129,10 @@
             store.stories = store.stories.filter(s => s.author !== targetUser);
             store.storyArchive = store.storyArchive.filter(sa => sa.author !== targetUser);
 
-            // DM 찌꺼기 및 관련 키 완벽 삭제
             Object.keys(store.dms).forEach(k => {
                 if (k.includes(targetUser)) delete store.dms[k];
             });
 
-            // 다른 계정들의 팔로우 목록에서도 제거
             Object.values(store.accounts).forEach(acc => {
                 if (acc.followers) acc.followers = acc.followers.filter(u => u !== targetUser);
                 if (acc.following) acc.following = acc.following.filter(u => u !== targetUser);
@@ -1263,16 +1273,6 @@
             });
         }
 
-        function searchHashtag(tag) {
-            closeModal('modal-post-detail');
-            switchTab('explore');
-            const searchInput = document.getElementById('explore-search-input');
-            if (searchInput) {
-                searchInput.value = '#' + tag;
-                filterExplore();
-            }
-        }
-
         function renderStories() {
             const container = document.getElementById('stories-container');
             container.innerHTML = '';
@@ -1387,716 +1387,4 @@
             if (userStories.length > 0) {
                 openStoryViewer(activeProfileId, userStories);
             } else {
-                alert('등록된 스토리가 없습니다.');
-            }
-        }
-
-        function renderStoryReactions() {
-            if (activeStoryViewer.isHighlight) return;
-            const currentItem = activeStoryViewer.items[activeStoryViewer.currentIndex];
-            if (!currentItem) return;
-
-            const avatarsContainer = document.getElementById('story-reactions-avatars');
-            const summaryText = document.getElementById('story-reactions-summary-text');
-            const reactions = currentItem.reactions || [];
-
-            avatarsContainer.innerHTML = '';
-
-            if (reactions.length === 0) {
-                summaryText.innerText = '활동 없음';
-                document.getElementById('story-reactions-display').onclick = null;
-                return;
-            }
-
-            reactions.forEach(r => {
-                const senderAcc = store.accounts[r.sender] || { avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150' };
-                const wrap = document.createElement('div');
-                wrap.className = 'relative flex items-center';
-                wrap.innerHTML = `
-                    <img src="${senderAcc.avatar}" class="w-6 h-6 rounded-full object-cover border border-white">
-                    <span class="absolute -bottom-1 -right-1 text-[10px] bg-black/60 rounded-full px-0.5">${r.emoji}</span>
-                `;
-                avatarsContainer.appendChild(wrap);
-            });
-
-            summaryText.innerText = `${reactions.length}명의 활동`;
-            document.getElementById('story-reactions-display').onclick = openStoryReactionsDetailModal;
-        }
-
-        function openStoryReactionsDetailModal() {
-            if (activeStoryViewer.isHighlight) return;
-            const currentItem = activeStoryViewer.items[activeStoryViewer.currentIndex];
-            if (!currentItem) return;
-            const reactions = currentItem.reactions || [];
-            const listEl = document.getElementById('story-reactions-detail-list');
-            listEl.innerHTML = '';
-
-            reactions.forEach(r => {
-                const senderAcc = store.accounts[r.sender] || { username: r.sender, fullName: r.sender, avatar: '' };
-                const row = document.createElement('div');
-                row.className = 'py-2.5 flex items-center justify-between';
-                row.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <img src="${senderAcc.avatar}" class="w-9 h-9 rounded-full object-cover">
-                        <div>
-                            <div class="font-semibold text-xs text-gray-800">@${senderAcc.username}</div>
-                            <div class="text-[11px] text-gray-400">${senderAcc.fullName}</div>
-                        </div>
-                    </div>
-                    <div class="text-xl bg-gray-50 p-1.5 rounded-xl border">${r.emoji}</div>
-                `;
-                listEl.appendChild(row);
-            });
-
-            document.getElementById('modal-story-reactions-detail').classList.remove('hidden');
-        }
-
-        function toggleEmojiPopover() {
-            const popover = document.getElementById('story-emoji-popover');
-            if (popover) popover.classList.toggle('hidden');
-        }
-
-        function sendStoryEmoji(emoji) {
-            if (!store.isAdmin || activeStoryViewer.isHighlight) return;
-            const currentItem = activeStoryViewer.items[activeStoryViewer.currentIndex];
-            if (!currentItem) return;
-
-            if (!currentItem.reactions) currentItem.reactions = [];
-            currentItem.reactions.unshift({ sender: store.currentAccount, emoji });
-
-            const storyAuthor = currentItem.author || activeStoryViewer.author;
-            if (storyAuthor && storyAuthor !== store.currentAccount) {
-                const dmKey = getDmKey(store.currentAccount, storyAuthor);
-                if (!store.dms[dmKey]) store.dms[dmKey] = [];
-                store.dms[dmKey].push({
-                    sender: store.currentAccount,
-                    text: emoji,
-                    time: '방금 전',
-                    storyImage: currentItem.image
-                });
-            }
-
-            saveStore();
-            renderStoryReactions();
-            triggerFloatingEmoji(emoji);
-            document.getElementById('story-emoji-popover').classList.add('hidden');
-        }
-
-        function sendStoryReplyMessage() {
-            if (!store.isAdmin || activeStoryViewer.isHighlight) return;
-            const input = document.getElementById('story-reply-input');
-            const text = input.value.trim();
-            if (!text) return;
-
-            const currentItem = activeStoryViewer.items[activeStoryViewer.currentIndex];
-            if (!currentItem) return;
-
-            const storyAuthor = currentItem.author || activeStoryViewer.author;
-            if (storyAuthor && storyAuthor !== store.currentAccount) {
-                const dmKey = getDmKey(store.currentAccount, storyAuthor);
-                if (!store.dms[dmKey]) store.dms[dmKey] = [];
-                store.dms[dmKey].push({
-                    sender: store.currentAccount,
-                    text: text,
-                    time: '방금 전',
-                    storyImage: currentItem.image
-                });
-                store.activeDmTarget = storyAuthor;
-            }
-
-            saveStore();
-            input.value = '';
-            closeModal('modal-story-viewer');
-            switchTab('dm');
-        }
-
-        function triggerFloatingEmoji(emoji) {
-            const container = document.getElementById('story-floating-emoji-container');
-            const span = document.createElement('div');
-            span.className = 'floating-emoji';
-            span.innerText = emoji;
-            container.appendChild(span);
-            setTimeout(() => {
-                span.remove();
-            }, 1200);
-        }
-
-        function handleDeleteCurrentStory() {
-            if (!store.isAdmin || activeStoryViewer.isHighlight) return;
-            if (!confirm('이 스토리를 삭제하시겠습니까?')) return;
-
-            const currentItem = activeStoryViewer.items[activeStoryViewer.currentIndex];
-            if (!currentItem) return;
-
-            store.stories = store.stories.filter(s => s.id !== currentItem.id);
-            saveStore();
-            closeModal('modal-story-viewer');
-            renderStories();
-            if (activeTab === 'profile') renderProfile(activeProfileId);
-        }
-
-        function openNewStoryModal() {
-            if (!store.isAdmin) return;
-            document.getElementById('story-modal-title').innerText = '새 스토리 올리기';
-            document.getElementById('modal-new-story').classList.remove('hidden');
-        }
-
-        function handleSaveStory(e) {
-            e.preventDefault();
-            if (!store.isAdmin) return;
-            const author = document.getElementById('story-author-select').value;
-            const time = document.getElementById('story-time-input').value.trim() || '방금 전';
-            const fileInput = document.getElementById('story-image-file');
-
-            const saveStoryObj = (imgUrl) => {
-                const newStoryObj = {
-                    id: 's_' + Date.now(),
-                    author,
-                    image: imgUrl,
-                    time,
-                    reactions: []
-                };
-
-                store.stories.unshift(newStoryObj);
-
-                if (!store.storyArchive) store.storyArchive = [];
-                store.storyArchive.unshift({
-                    id: 'sa_' + Date.now(),
-                    author,
-                    image: imgUrl,
-                    time,
-                    reactions: []
-                });
-
-                saveStore();
-                renderStories();
-                if (activeTab === 'profile') renderProfile(activeProfileId);
-                closeModal('modal-new-story');
-            };
-
-            if (fileInput.files && fileInput.files[0]) {
-                const reader = new FileReader();
-                reader.onload = (e) => saveStoryObj(e.target.result);
-                reader.readAsDataURL(fileInput.files[0]);
-            } else {
-                saveStoryObj('https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600');
-            }
-        }
-
-        function handleToggleFollow() {
-            if (!store.isAdmin) {
-                alert('독자 모드에서는 팔로우할 수 없습니다. 관리자 모드로 로그인해주세요.');
-                return;
-            }
-
-            const currentAcc = store.accounts[store.currentAccount];
-            const targetAcc = store.accounts[activeProfileId];
-            if (!currentAcc || !targetAcc || store.currentAccount === activeProfileId) return;
-
-            if (!currentAcc.following) currentAcc.following = [];
-            if (!targetAcc.followers) targetAcc.followers = [];
-
-            const isFollowing = currentAcc.following.includes(activeProfileId);
-            if (isFollowing) {
-                currentAcc.following = currentAcc.following.filter(u => u !== activeProfileId);
-                targetAcc.followers = targetAcc.followers.filter(u => u !== store.currentAccount);
-            } else {
-                currentAcc.following.push(activeProfileId);
-                targetAcc.followers.push(store.currentAccount);
-            }
-            saveStore();
-            renderProfile(activeProfileId);
-        }
-
-        function openFollowListModal(type) {
-            const acc = store.accounts[activeProfileId];
-            if (!acc) return;
-            const userList = type === 'followers' ? (acc.followers || []) : (acc.following || []);
-            
-            document.getElementById('follow-list-title').innerText = type === 'followers' ? '팔로워 목록' : '팔로잉 목록';
-            const container = document.getElementById('follow-list-container');
-            container.innerHTML = '';
-
-            if (userList.length === 0) {
-                container.innerHTML = '<div class="text-xs text-gray-400 text-center py-4">목록이 비어 있습니다.</div>';
-            } else {
-                userList.forEach(username => {
-                    const targetAcc = store.accounts[username];
-                    if (!targetAcc) return;
-                    const row = document.createElement('div');
-                    row.className = 'py-2 flex items-center justify-between cursor-pointer hover:bg-gray-50 px-2 rounded';
-                    row.onclick = () => {
-                        closeModal('modal-follow-list');
-                        viewProfile(username);
-                    };
-                    row.innerHTML = `
-                        <div class="flex items-center gap-2.5">
-                            <img src="${targetAcc.avatar}" class="w-8 h-8 rounded-full object-cover">
-                            <div class="text-xs">
-                                <div class="font-semibold text-gray-800">${targetAcc.username}</div>
-                                <div class="text-[10px] text-gray-400">${targetAcc.fullName}</div>
-                            </div>
-                        </div>
-                    `;
-                    container.appendChild(row);
-                });
-            }
-            document.getElementById('modal-follow-list').classList.remove('hidden');
-        }
-
-        function viewProfile(username) { activeProfileId = username; switchTab('profile'); }
-
-        function renderProfile(username) {
-            const acc = store.accounts[username] || { username, fullName: username, avatar: '', bio: '', followers: [], following: [], highlights: [] };
-            
-            const avatarContainer = document.getElementById('profile-avatar-container');
-            const userStories = store.stories.filter(s => s.author === username);
-            if (userStories.length > 0) {
-                avatarContainer.className = 'w-24 h-24 sm:w-36 sm:h-36 rounded-full p-1 story-ring cursor-pointer';
-            } else {
-                avatarContainer.className = 'w-24 h-24 sm:w-36 sm:h-36 rounded-full p-1 border border-gray-300 cursor-pointer';
-            }
-
-            document.getElementById('profile-avatar').src = acc.avatar;
-            document.getElementById('profile-username').innerText = acc.username;
-            document.getElementById('profile-fullname').innerText = acc.fullName;
-            document.getElementById('profile-bio').innerText = acc.bio;
-
-            const userPosts = store.posts.filter(p => p.author === username);
-            document.getElementById('profile-posts-count').innerText = userPosts.length;
-            document.getElementById('profile-followers-count').innerText = acc.followers ? acc.followers.length : 0;
-            document.getElementById('profile-following-count').innerText = acc.following ? acc.following.length : 0;
-
-            const followBtn = document.getElementById('profile-follow-btn');
-            if (store.currentAccount === username) {
-                followBtn.style.display = 'none';
-            } else {
-                followBtn.style.display = 'inline-block';
-                const curAcc = store.accounts[store.currentAccount];
-                const isFollowing = curAcc && curAcc.following && curAcc.following.includes(username);
-                followBtn.innerText = isFollowing ? '팔로잉' : '팔로우';
-                followBtn.className = isFollowing 
-                    ? 'px-4 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold text-sm rounded-lg transition'
-                    : 'px-4 py-1.5 bg-sky-500 hover:bg-sky-600 text-white font-semibold text-sm rounded-lg transition';
-            }
-
-            const highlightsContainer = document.getElementById('profile-highlights-container');
-            highlightsContainer.innerHTML = '';
-            const highlights = acc.highlights || [];
-
-            if (store.isAdmin) {
-                const addBtn = document.createElement('div');
-                addBtn.className = 'flex flex-col items-center space-y-1 cursor-pointer min-w-[64px]';
-                addBtn.onclick = () => openNewHighlightModal();
-                addBtn.innerHTML = `
-                    <div class="w-14 h-14 rounded-full border border-gray-300 flex items-center justify-center bg-gray-50 text-gray-400 hover:bg-gray-100 transition">
-                        <i class="fa-solid fa-plus text-lg"></i>
-                    </div>
-                    <span class="text-[11px] text-gray-500 truncate w-14 text-center font-medium">새로 만들기</span>
-                `;
-                highlightsContainer.appendChild(addBtn);
-            }
-
-            highlights.forEach(h => {
-                const item = document.createElement('div');
-                item.className = 'flex flex-col items-center space-y-1 cursor-pointer min-w-[64px]';
-                item.onclick = () => {
-                    if (store.isAdmin) {
-                        openEditHighlightModal(h.id);
-                    } else {
-                        openHighlightViewer(username, h);
-                    }
-                };
-                item.innerHTML = `
-                    <div class="w-14 h-14 rounded-full p-[2px] border-2 border-gray-200">
-                        <img src="${h.cover}" class="w-full h-full object-cover rounded-full">
-                    </div>
-                    <span class="text-[11px] text-gray-600 truncate w-14 text-center">${h.title}</span>
-                `;
-                highlightsContainer.appendChild(item);
-            });
-
-            const grid = document.getElementById('profile-posts-grid');
-            grid.innerHTML = '';
-            userPosts.forEach(post => {
-                const item = document.createElement('div');
-                item.className = 'aspect-square relative group cursor-pointer overflow-hidden bg-gray-100';
-                const firstImg = post.images ? post.images[0] : post.image;
-                item.innerHTML = `<img src="${firstImg}" class="w-full h-full object-cover">`;
-                item.onclick = () => openPostDetailModal(post.id);
-                grid.appendChild(item);
-            });
-        }
-
-        function openNewHighlightModal() {
-            if (!store.isAdmin) return;
-            editingHighlightId = null;
-            document.getElementById('highlight-modal-title').innerText = '새 하이라이트 폴더 만들기';
-            document.getElementById('highlight-title-input').value = '';
-            document.getElementById('highlight-current-section').classList.add('hidden');
-            document.getElementById('highlight-delete-btn').classList.add('hidden');
-            renderArchivePicker([], []);
-            document.getElementById('modal-highlight').classList.remove('hidden');
-        }
-
-        function openEditHighlightModal(highlightId) {
-            if (!store.isAdmin) return;
-            const acc = store.accounts[activeProfileId];
-            if (!acc || !acc.highlights) return;
-            const h = acc.highlights.find(item => item.id === highlightId);
-            if (!h) return;
-
-            editingHighlightId = highlightId;
-            document.getElementById('highlight-modal-title').innerText = '하이라이트 폴더 수정';
-            document.getElementById('highlight-title-input').value = h.title;
-            document.getElementById('highlight-current-section').classList.remove('hidden');
-
-            const currentGrid = document.getElementById('highlight-current-images-grid');
-            currentGrid.innerHTML = '';
-            const currentImgs = h.images && h.images.length > 0 ? h.images : [h.cover];
-            currentImgs.forEach((imgUrl, idx) => {
-                const wrap = document.createElement('div');
-                wrap.className = 'relative aspect-square rounded overflow-hidden border group';
-                wrap.innerHTML = `
-                    <img src="${imgUrl}" class="w-full h-full object-cover">
-                    <button type="button" onclick="removeHighlightImage('${highlightId}', ${idx})" class="absolute top-0.5 right-0.5 bg-red-600 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] opacity-80 hover:opacity-100">×</button>
-                `;
-                currentGrid.appendChild(wrap);
-            });
-
-            renderArchivePicker(currentImgs, h.reactions || []);
-            document.getElementById('highlight-delete-btn').classList.remove('hidden');
-            document.getElementById('modal-highlight').classList.remove('hidden');
-        }
-
-        function renderArchivePicker(existingImages, existingReactions) {
-            const picker = document.getElementById('story-archive-picker');
-            picker.innerHTML = '';
-            const archiveList = store.storyArchive || [];
-
-            if (archiveList.length === 0) {
-                picker.innerHTML = `<div class="col-span-4 text-xs text-gray-400 text-center py-4">저장된 스토리 보관함 기록이 없습니다.</div>`;
-                return;
-            }
-
-            archiveList.forEach((item, index) => {
-                const isAlreadyIncluded = existingImages.includes(item.image);
-                const wrap = document.createElement('label');
-                wrap.className = `relative aspect-square rounded overflow-hidden border cursor-pointer block ${isAlreadyIncluded ? 'opacity-45' : 'hover:ring-2 hover:ring-pink-500'}`;
-                wrap.innerHTML = `
-                    <img src="${item.image}" class="w-full h-full object-cover">
-                    <input type="checkbox" name="archive-story-chk" value="${index}" ${isAlreadyIncluded ? 'disabled' : ''} class="absolute top-1 left-1 rounded text-pink-600 focus:ring-pink-500">
-                    <div class="absolute bottom-0 inset-x-0 bg-black/50 text-white text-[9px] text-center truncate px-0.5">${item.time}</div>
-                `;
-                picker.appendChild(wrap);
-            });
-        }
-
-        function removeHighlightImage(highlightId, imgIdx) {
-            const acc = store.accounts[activeProfileId];
-            if (!acc || !acc.highlights) return;
-            const h = acc.highlights.find(item => item.id === highlightId);
-            if (!h || !h.images) return;
-
-            if (h.images.length <= 1) {
-                alert('하이라이트에는 최소 1장의 사진이 있어야 합니다. 폴더를 삭제하려면 하단의 폴더 삭제를 이용해주세요.');
-                return;
-            }
-
-            h.images.splice(imgIdx, 1);
-            if (h.reactions && h.reactions[imgIdx]) h.reactions.splice(imgIdx, 1);
-            h.cover = h.images[0];
-            saveStore();
-            openEditHighlightModal(highlightId);
-            renderProfile(activeProfileId);
-        }
-
-        function handleSaveHighlight(e) {
-            e.preventDefault();
-            if (!store.isAdmin) return;
-
-            const acc = store.accounts[activeProfileId];
-            if (!acc) return;
-            if (!acc.highlights) acc.highlights = [];
-
-            const title = document.getElementById('highlight-title-input').value.trim();
-            const checkedCheckboxes = document.querySelectorAll('input[name="archive-story-chk"]:checked');
-            
-            const selectedImages = [];
-            const selectedReactions = [];
-            checkedCheckboxes.forEach(chk => {
-                const archiveItem = store.storyArchive[parseInt(chk.value)];
-                if (archiveItem) {
-                    selectedImages.push(archiveItem.image);
-                    selectedReactions.push(archiveItem.reactions || []);
-                }
-            });
-
-            if (editingHighlightId) {
-                const h = acc.highlights.find(item => item.id === editingHighlightId);
-                if (h) {
-                    h.title = title;
-                    if (!h.images) h.images = [h.cover];
-                    if (!h.reactions) h.reactions = [];
-                    if (selectedImages.length > 0) {
-                        h.images.push(...selectedImages);
-                        h.reactions.push(...selectedReactions);
-                    }
-                    if (h.images && h.images.length > 0) {
-                        h.cover = h.images[0];
-                    }
-                }
-            } else {
-                const finalImgs = selectedImages.length > 0 ? selectedImages : ['https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600'];
-                const finalReactions = selectedReactions.length > 0 ? selectedReactions : [[]];
-                acc.highlights.push({
-                    id: 'h_' + Date.now(),
-                    title,
-                    cover: finalImgs[0],
-                    images: finalImgs,
-                    reactions: finalReactions
-                });
-            }
-
-            saveStore();
-            closeModal('modal-highlight');
-            renderProfile(activeProfileId);
-        }
-
-        function handleDeleteHighlight() {
-            if (!store.isAdmin) return;
-            if (!editingHighlightId) return;
-            if (!confirm('이 하이라이트 폴더를 통째로 삭제하시겠습니까?')) return;
-
-            const acc = store.accounts[activeProfileId];
-            if (acc && acc.highlights) {
-                acc.highlights = acc.highlights.filter(h => h.id !== editingHighlightId);
-                saveStore();
-                closeModal('modal-highlight');
-                renderProfile(activeProfileId);
-            }
-        }
-
-        function openNewPostModal() {
-            if (!store.isAdmin) return;
-            editingPostId = null;
-            document.getElementById('post-modal-title').innerText = '새 피드 올리기 (여러 장 가능)';
-            document.getElementById('post-caption').value = '';
-            document.getElementById('post-likes').value = 124;
-            document.getElementById('post-time').value = '방금 전';
-            document.getElementById('post-delete-btn').classList.add('hidden');
-            document.getElementById('modal-new-post').classList.remove('hidden');
-        }
-
-        function openEditPostModal(postId) {
-            if (!store.isAdmin) return;
-            const post = store.posts.find(p => p.id === postId);
-            if (!post) return;
-
-            editingPostId = postId;
-            document.getElementById('post-modal-title').innerText = '피드 수정';
-            document.getElementById('post-author-select').value = post.author;
-            document.getElementById('post-caption').value = post.caption;
-            document.getElementById('post-likes').value = post.likes;
-            document.getElementById('post-time').value = post.time;
-            document.getElementById('post-delete-btn').classList.remove('hidden');
-            document.getElementById('modal-new-post').classList.remove('hidden');
-        }
-
-        function handleSavePost(e) {
-            e.preventDefault();
-            if (!store.isAdmin) return;
-            const author = document.getElementById('post-author-select').value;
-            const caption = document.getElementById('post-caption').value.trim();
-            const likes = parseInt(document.getElementById('post-likes').value) || 100;
-            const time = document.getElementById('post-time').value.trim() || '방금 전';
-            const fileInput = document.getElementById('post-image-files');
-
-            const readMultipleFiles = (files) => {
-                return Promise.all(Array.from(files).map(file => {
-                    return new Promise((resolve) => {
-                        const reader = new FileReader();
-                        reader.onload = (e) => resolve(e.target.result);
-                        reader.readAsDataURL(file);
-                    });
-                }));
-            };
-
-            const processSave = (newImages) => {
-                if (editingPostId) {
-                    const post = store.posts.find(p => p.id === editingPostId);
-                    if (post) {
-                        post.author = author;
-                        post.caption = caption;
-                        post.likes = likes;
-                        post.time = time;
-                        if (newImages && newImages.length > 0) {
-                            post.images = newImages;
-                            post.activeImgIdx = 0;
-                        }
-                    }
-                } else {
-                    store.posts.unshift({
-                        id: 'p_' + Date.now(),
-                        author,
-                        images: (newImages && newImages.length > 0) ? newImages : ['https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600'],
-                        activeImgIdx: 0,
-                        caption,
-                        likes,
-                        likedByMe: false,
-                        time,
-                        comments: []
-                    });
-                }
-                saveStore();
-                closeModal('modal-new-post');
-                renderFeed();
-                if (activeTab === 'profile') renderProfile(activeProfileId);
-            };
-
-            if (fileInput.files && fileInput.files.length > 0) {
-                readMultipleFiles(fileInput.files).then(images => processSave(images));
-            } else {
-                processSave(null);
-            }
-        }
-
-        function handleDeletePost() {
-            if (!store.isAdmin) return;
-            if (!editingPostId) return;
-            if (!confirm('이 피드를 삭제하시겠습니까?')) return;
-
-            store.posts = store.posts.filter(p => p.id !== editingPostId);
-            saveStore();
-            closeModal('modal-new-post');
-            renderFeed();
-            if (activeTab === 'profile') renderProfile(activeProfileId);
-        }
-
-        function handleAddComment(e, postId) {
-            e.preventDefault();
-            if (!store.isAdmin) return;
-            const input = e.target.querySelector('input');
-            const text = input.value.trim();
-            if (!text) return;
-            const post = store.posts.find(p => p.id === postId);
-            if (post) {
-                post.comments.push({ author: store.currentAccount, text });
-                saveStore();
-                input.value = '';
-                renderFeed();
-                if (!document.getElementById('modal-post-detail').classList.contains('hidden')) {
-                    renderScrollFeedModal();
-                }
-            }
-        }
-
-        function toggleLike(postId) {
-            const post = store.posts.find(p => p.id === postId);
-            if (post) {
-                post.likedByMe = !post.likedByMe;
-                post.likes += post.likedByMe ? 1 : -1;
-                saveStore();
-                renderFeed();
-                if (!document.getElementById('modal-post-detail').classList.contains('hidden')) {
-                    renderScrollFeedModal();
-                }
-            }
-        }
-
-        function openNewAccountModal() {
-            if (!store.isAdmin) return;
-            document.getElementById('modal-new-account').classList.remove('hidden');
-        }
-
-        function handleCreateAccount(e) {
-            e.preventDefault();
-            if (!store.isAdmin) return;
-            const username = document.getElementById('new-acc-username').value.trim();
-            const fullName = document.getElementById('new-acc-fullname').value.trim();
-            const bio = document.getElementById('new-acc-bio').value.trim();
-            const fileInput = document.getElementById('new-acc-avatar-file');
-
-            if (!username || store.accounts[username]) {
-                alert('이미 존재하는 아이디이거나 올바르지 않습니다.');
-                return;
-            }
-
-            const saveAcc = (avatarUrl) => {
-                store.accounts[username] = {
-                    username,
-                    fullName,
-                    avatar: avatarUrl,
-                    bio,
-                    followers: [],
-                    following: [],
-                    highlights: []
-                };
-                saveStore();
-                renderAccountSwitcher();
-                updatePovUI();
-                closeModal('modal-new-account');
-                alert('@' + username + ' 캐릭터가 추가되었습니다.');
-            };
-
-            if (fileInput.files && fileInput.files[0]) {
-                const reader = new FileReader();
-                reader.onload = (e) => saveAcc(e.target.result);
-                reader.readAsDataURL(fileInput.files[0]);
-            } else {
-                saveAcc('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150');
-            }
-        }
-
-        function renderAccountSwitcher() {
-            const container = document.getElementById('account-switcher');
-            const selectPost = document.getElementById('post-author-select');
-            const selectStory = document.getElementById('story-author-select');
-            container.innerHTML = ''; selectPost.innerHTML = ''; selectStory.innerHTML = '';
-
-            Object.values(store.accounts).forEach(acc => {
-                const btn = document.createElement('button');
-                btn.className = `w-full flex items-center gap-2 p-2 rounded-lg text-left text-xs ${store.currentAccount === acc.username ? 'bg-pink-50 text-pink-600 font-semibold' : 'hover:bg-gray-50'}`;
-                btn.onclick = () => {
-                    store.currentAccount = acc.username;
-                    saveStore();
-                    renderAccountSwitcher();
-                    updatePovUI();
-                    if (activeTab === 'dm') renderDmView();
-                    if (activeTab === 'profile') renderProfile(activeProfileId);
-                };
-                btn.innerHTML = `<img src="${acc.avatar}" class="w-5 h-5 rounded-full object-cover"><span class="truncate">${acc.username}</span>`;
-                container.appendChild(btn);
-
-                const opt = `<option value="${acc.username}">@${acc.username} (${acc.fullName})</option>`;
-                selectPost.innerHTML += opt;
-                selectStory.innerHTML += opt;
-            });
-
-            const cur = store.accounts[store.currentAccount] || Object.values(store.accounts)[0];
-            if (cur) {
-                document.getElementById('nav-user-avatar').src = cur.avatar;
-            }
-        }
-
-        function formatMentionsAndTags(text) {
-            if (!text) return '';
-            return text
-                .replace(/@([a-zA-Z0-9_]+)/g, '<span class="text-pink-600 font-semibold cursor-pointer hover:underline" onclick="event.stopPropagation(); closeModal(\'modal-post-detail\'); viewProfile(\'$1\')">@$1</span>')
-                .replace(/#([가-힣a-zA-Z0-9_]+)/g, '<span class="text-pink-600 font-semibold cursor-pointer hover:underline" onclick="event.stopPropagation(); searchHashtag(\'$1\')">#$1</span>');
-        }
-
-        function searchHashtag(tag) {
-            closeModal('modal-post-detail');
-            switchTab('explore');
-            const searchInput = document.getElementById('explore-search-input');
-            if (searchInput) {
-                searchInput.value = '#' + tag;
-                filterExplore();
-            }
-        }
-
-        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-    </script>
-</body>
-</html>
+                alert('등록된 스
