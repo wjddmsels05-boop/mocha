@@ -224,10 +224,10 @@
                 <i class="fa-solid fa-compass text-lg"></i>
                 <span class="text-[10px] font-medium mt-0.5">탐색</span>
             </button>
-            <!-- 관리자 모드 전용 하단 데이터 저장 버튼 (관리자일 때만 노출) -->
-            <button id="bottom-admin-save-btn" onclick="exportDataJson()" class="hidden flex flex-col items-center text-pink-600 hover:text-pink-700">
-                <i class="fa-solid fa-download text-lg"></i>
-                <span class="text-[10px] font-bold mt-0.5">데이터저장</span>
+            <!-- 관리자 모드 전용 하단 타임캡슐 저장 버튼 (현재 상태를 HTML 파일로 통째 다운로드) -->
+            <button id="bottom-admin-save-btn" onclick="exportHtmlTimeCapsule()" class="hidden flex flex-col items-center text-pink-600 hover:text-pink-700">
+                <i class="fa-solid fa-file-arrow-down text-lg"></i>
+                <span class="text-[10px] font-bold mt-0.5">타임캡슐저장</span>
             </button>
         </nav>
     </div>
@@ -636,38 +636,22 @@
             localStorage.setItem('teezgram_v6_store', JSON.stringify(store));
         }
 
-        // 📁 기기 간 데이터 동기화 함수 (내보내기)
-        function exportDataJson() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(store));
+        // 📁 현재 화면과 데이터가 통째로 담긴 타임캡슐(HTML 파일) 자동 생성 함수
+        function exportHtmlTimeCapsule() {
+            // 현재 store 데이터를 최신 상태의 INITIAL_DATA 문자열로 치환
+            let htmlContent = document.documentElement.outerHTML;
+            
+            // 기존 코드 내 INITIAL_DATA 변수를 현재 store 데이터로 교체
+            const currentDataScript = `const INITIAL_DATA = ${JSON.stringify(store, null, 4)};`;
+            htmlContent = htmlContent.replace(/const INITIAL_DATA = \{[\s\S]*?\};\n/, currentDataScript);
+
+            const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
             const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", "teezgram_backup.json");
+            downloadAnchor.href = URL.createObjectURL(blob);
+            downloadAnchor.download = `teezgram_chapter_${Date.now()}.html`;
             document.body.appendChild(downloadAnchor);
             downloadAnchor.click();
             downloadAnchor.remove();
-        }
-
-        // 📁 기기 간 데이터 동기화 함수 (가져오기)
-        function importDataJson(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                try {
-                    const imported = JSON.parse(event.target.result);
-                    if (imported && imported.accounts) {
-                        store = imported;
-                        saveStore();
-                        alert('데이터가 성공적으로 동기화되었습니다!');
-                        location.reload();
-                    } else {
-                        alert('올바른 Teezgram 백업 파일이 아닙니다.');
-                    }
-                } catch (err) {
-                    alert('파일을 읽는 중 오류가 발생했습니다.');
-                }
-            };
-            reader.readAsText(file);
         }
 
         window.addEventListener('DOMContentLoaded', () => {
