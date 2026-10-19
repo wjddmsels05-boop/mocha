@@ -76,16 +76,11 @@
                 </button>
             </nav>
 
-            <div class="border-t border-gray-200 pt-4 mt-auto space-y-2">
-                <div class="text-xs font-semibold text-gray-400 px-3 mb-1 uppercase tracking-wider">등장인물 계정 전환</div>
+            <div class="border-t border-gray-200 pt-4 mt-auto">
+                <div class="text-xs font-semibold text-gray-400 px-3 mb-2 uppercase tracking-wider">등장인물 계정 전환</div>
                 <div id="account-switcher" class="space-y-1 max-h-36 overflow-y-auto hide-scrollbar"></div>
                 
-                <!-- 전체 리셋 버튼 (PC 사이드바 전용) -->
-                <button id="admin-reset-btn-side" onclick="handleFullReset()" class="hidden w-full py-2 bg-red-50 hover:bg-red-100 text-red-600 font-bold text-xs rounded-lg text-center transition">
-                    🔄 전체 초기화 (데이터 리셋)
-                </button>
-
-                <div class="p-2 bg-gray-50 rounded-lg border text-center">
+                <div class="mt-3 p-2 bg-gray-50 rounded-lg border text-center">
                     <span id="admin-status-text" class="text-xs font-bold text-gray-600 cursor-pointer hover:underline" onclick="openModeSelectModal()">독자 모드</span>
                 </div>
             </div>
@@ -186,12 +181,11 @@
                             </div>
                         </div>
 
-                        <!-- 모바일 관리자 액션 버튼 그룹 (전체 리셋 버튼 포함) -->
+                        <!-- 모바일 관리자 작성 및 캐릭터 관리 액션 버튼 그룹 -->
                         <div id="mobile-admin-actions" class="hidden flex flex-wrap gap-2 justify-center sm:justify-start pt-1">
                             <button onclick="openNewStoryModal()" class="px-3 py-1.5 bg-amber-500 text-white text-xs font-bold rounded-lg shadow-sm">➕ 스토리 올리기</button>
                             <button onclick="openNewPostModal()" class="px-3 py-1.5 bg-pink-500 text-white text-xs font-bold rounded-lg shadow-sm">➕ 피드 올리기</button>
                             <button onclick="openNewAccountModal()" class="px-3 py-1.5 bg-purple-600 text-white text-xs font-bold rounded-lg shadow-sm">👤 캐릭터 추가</button>
-                            <button onclick="handleFullReset()" class="px-3 py-1.5 bg-red-600 text-white text-xs font-bold rounded-lg shadow-sm">🔄 전체 리셋</button>
                         </div>
 
                         <div class="flex justify-center sm:justify-start gap-8 text-sm">
@@ -234,6 +228,11 @@
             <button id="bottom-admin-save-btn" onclick="exportHtmlTimeCapsule()" class="hidden flex flex-col items-center text-pink-600 hover:text-pink-700">
                 <i class="fa-solid fa-file-arrow-down text-lg"></i>
                 <span class="text-[10px] font-bold mt-0.5">타임캡슐저장</span>
+            </button>
+            <!-- 관리자 모드 전용 하단 전체 리셋 버튼 -->
+            <button id="bottom-admin-reset-btn" onclick="handleFullReset()" class="hidden flex flex-col items-center text-red-500 hover:text-red-600">
+                <i class="fa-solid fa-rotate-right text-lg"></i>
+                <span class="text-[10px] font-bold mt-0.5">전체리셋</span>
             </button>
         </nav>
     </div>
@@ -755,7 +754,7 @@
                 'admin-create-btn-side', 'admin-create-btn-top',
                 'admin-create-account-btn-side', 'admin-story-btn-side', 
                 'admin-edit-profile-btn', 'admin-delete-account-btn',
-                'bottom-admin-save-btn', 'admin-reset-btn-side'
+                'bottom-admin-save-btn', 'bottom-admin-reset-btn'
             ];
             adminBtns.forEach(id => {
                 const el = document.getElementById(id);
