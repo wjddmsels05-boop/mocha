@@ -230,8 +230,12 @@
                 </div>
             </div>
 
+            <!-- 스토리 이미지 슬라이드 네비게이션 포함 -->
             <div class="absolute inset-0 flex items-center justify-center">
                 <img id="story-view-img" src="" class="w-full h-full object-cover">
+                <button id="story-prev-btn" onclick="slideStoryItem(-1)" class="absolute left-2 bg-black/50 text-white rounded-full w-8 h-8 flex items-center justify-center text-xs hidden">❮</button>
+                <button id="story-next-btn" onclick="slideStoryItem(1)" class="absolute right-2 bg-black/50 text-white rounded-full w-8 h-8 flex items-center justify-center text-xs hidden">❯</button>
+                <div id="story-pagination-badge" class="absolute top-14 left-1/2 -translate-x-1/2 bg-black/60 text-white text-[10px] px-2.5 py-0.5 rounded-full hidden">1/1</div>
             </div>
 
             <div id="story-reactions-display" class="relative z-10 bg-black/50 text-white text-xs p-2 rounded-lg max-h-20 overflow-y-auto hide-scrollbar space-y-1"></div>
@@ -288,25 +292,27 @@
         </div>
     </div>
 
-    <!-- MODAL: CREATE / EDIT HIGHLIGHT -->
+    <!-- MODAL: CREATE / EDIT HIGHLIGHT (여러 장 사진 관리 기능 추가) -->
     <div id="modal-highlight" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl max-w-sm w-full p-5 space-y-4 shadow-xl">
+        <div class="bg-white rounded-xl max-w-md w-full p-6 space-y-4 shadow-xl max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b pb-2">
-                <h3 id="highlight-modal-title" class="font-bold text-sm">스토리 하이라이트</h3>
+                <h3 id="highlight-modal-title" class="font-bold text-sm">스토리 하이라이트 관리</h3>
                 <button onclick="closeModal('modal-highlight')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-            <form onsubmit="handleSaveHighlight(event)" class="space-y-3">
+            <form onsubmit="handleSaveHighlight(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-500 mb-1">하이라이트 제목</label>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">하이라이트 폴더 제목</label>
                     <input type="text" id="highlight-title-input" required placeholder="예: 추억 🐱" class="w-full border rounded-lg p-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-500 mb-1">커버 사진 첨부 (미선택 시 기존 유지/기본값)</label>
-                    <input type="file" id="highlight-cover-file" accept="image/*" class="w-full text-xs text-gray-500">
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">하이라이트에 추가할 사진들 (여러 장 선택 가능)</label>
+                    <input type="file" id="highlight-images-files" accept="image/*" multiple class="w-full text-xs text-gray-500">
+                    <p class="text-[10px] text-gray-400 mt-1">* 사진을 추가하면 기존 목록에 이어서 저장됩니다.</p>
                 </div>
-                <div class="flex gap-2 pt-1">
-                    <button type="button" id="highlight-delete-btn" onclick="handleDeleteHighlight()" class="hidden py-2 px-3 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg text-xs font-semibold">🗑️ 삭제</button>
-                    <button type="submit" class="flex-1 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded-lg text-xs font-semibold">저장</button>
+                <div id="highlight-current-images-preview" class="space-y-2"></div>
+                <div class="flex gap-2 pt-2 border-t">
+                    <button type="button" id="highlight-delete-btn" onclick="handleDeleteHighlight()" class="hidden py-2.5 px-4 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg text-xs font-semibold">🗑️ 폴더 삭제</button>
+                    <button type="submit" class="flex-1 py-2.5 bg-pink-500 hover:bg-pink-600 text-white rounded-lg text-xs font-semibold">저장하기</button>
                 </div>
             </form>
         </div>
@@ -418,8 +424,23 @@
                     followers: ['wooyoung_j'],
                     following: ['wooyoung_j'],
                     highlights: [
-                        { id: 'h1', title: '추억 🐱', cover: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150' },
-                        { id: 'h2', title: '일상 ☕', cover: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=150' }
+                        { 
+                            id: 'h1', 
+                            title: '추억 🐱', 
+                            cover: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150',
+                            images: [
+                                'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600',
+                                'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=600'
+                            ]
+                        },
+                        { 
+                            id: 'h2', 
+                            title: '일상 ☕', 
+                            cover: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=150',
+                            images: [
+                                'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=600'
+                            ]
+                        }
                     ]
                 },
                 'wooyoung_j': {
@@ -430,7 +451,14 @@
                     followers: ['san_choi'],
                     following: ['san_choi'],
                     highlights: [
-                        { id: 'h3', title: 'Dance 💃', cover: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150' }
+                        { 
+                            id: 'h3', 
+                            title: 'Dance 💃', 
+                            cover: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+                            images: [
+                                'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600'
+                            ]
+                        }
                     ]
                 }
             },
@@ -475,6 +503,14 @@
         let editingDmIndex = null;
         let editingPostId = null;
         let editingHighlightId = null;
+
+        // 하이라이트 연속 슬라이드용 변수
+        let activeHighlightViewer = {
+            author: '',
+            images: [],
+            currentIndex: 0,
+            title: ''
+        };
 
         function saveStore() {
             localStorage.setItem('teezgram_v6_store', JSON.stringify(store));
@@ -565,7 +601,7 @@
             window.scrollTo(0,0);
         }
 
-        // DM VIEW RENDERING (관리자 모드에서만 수정 버튼 노출)
+        // DM VIEW RENDERING
         function getDmKey(u1, u2) {
             return [u1, u2].sort().join('_');
         }
@@ -794,7 +830,6 @@
             container.innerHTML = store.posts.map(post => buildPostCardHTML(post)).join('');
         }
 
-        // 모달 바깥 빈 곳(검은 배경) 클릭 시 닫기
         function handleOutsideClick(event) {
             if (event.target.id === 'modal-post-detail') {
                 closeModal('modal-post-detail');
@@ -854,6 +889,7 @@
         }
 
         function openStoryViewer(story) {
+            activeHighlightViewer = { isHighlight: false };
             currentViewingStory = story;
             const acc = store.accounts[story.author] || { username: story.author, avatar: '' };
             document.getElementById('story-view-avatar').src = acc.avatar;
@@ -861,8 +897,64 @@
             document.getElementById('story-view-time').innerText = story.time;
             document.getElementById('story-view-img').src = story.image;
 
+            document.getElementById('story-prev-btn').classList.add('hidden');
+            document.getElementById('story-next-btn').classList.add('hidden');
+            document.getElementById('story-pagination-badge').classList.add('hidden');
+
             renderStoryReactions();
             document.getElementById('modal-story-viewer').classList.remove('hidden');
+        }
+
+        // 하이라이트 그룹 내 여러 장 연속 보기 뷰어
+        function openHighlightViewer(authorUsername, highlightObj) {
+            activeHighlightViewer = {
+                isHighlight: true,
+                author: authorUsername,
+                images: highlightObj.images || [highlightObj.cover],
+                currentIndex: 0,
+                title: highlightObj.title
+            };
+
+            updateHighlightViewerScreen();
+            document.getElementById('modal-story-viewer').classList.remove('hidden');
+        }
+
+        function updateHighlightViewerScreen() {
+            const acc = store.accounts[activeHighlightViewer.author] || { username: activeHighlightViewer.author, avatar: '' };
+            document.getElementById('story-view-avatar').src = acc.avatar;
+            document.getElementById('story-view-username').innerText = acc.username + ' (' + activeHighlightViewer.title + ')';
+            document.getElementById('story-view-time').innerText = '하이라이트';
+            
+            const imgs = activeHighlightViewer.images;
+            const idx = activeHighlightViewer.currentIndex;
+            document.getElementById('story-view-img').src = imgs[idx];
+
+            const prevBtn = document.getElementById('story-prev-btn');
+            const nextBtn = document.getElementById('story-next-btn');
+            const badge = document.getElementById('story-pagination-badge');
+
+            if (imgs.length > 1) {
+                prevBtn.classList.remove('hidden');
+                nextBtn.classList.remove('hidden');
+                badge.classList.remove('hidden');
+                badge.innerText = `${idx + 1} / ${imgs.length}`;
+            } else {
+                prevBtn.classList.add('hidden');
+                nextBtn.classList.add('hidden');
+                badge.classList.add('hidden');
+            }
+
+            const container = document.getElementById('story-reactions-display');
+            container.innerHTML = `<div class="text-gray-400 text-center text-[11px]">하이라이트 모드</div>`;
+        }
+
+        function slideStoryItem(direction) {
+            if (!activeHighlightViewer.isHighlight) return;
+            let idx = activeHighlightViewer.currentIndex + direction;
+            if (idx < 0) idx = activeHighlightViewer.images.length - 1;
+            if (idx >= activeHighlightViewer.images.length) idx = 0;
+            activeHighlightViewer.currentIndex = idx;
+            updateHighlightViewerScreen();
         }
 
         function openProfileStory() {
@@ -875,6 +967,7 @@
         }
 
         function renderStoryReactions() {
+            if (activeHighlightViewer.isHighlight) return;
             if (!currentViewingStory) return;
             const container = document.getElementById('story-reactions-display');
             const reactions = currentViewingStory.reactions || [];
@@ -883,6 +976,7 @@
         }
 
         function sendStoryEmoji(emoji) {
+            if (activeHighlightViewer.isHighlight) return;
             if (!currentViewingStory) return;
             if (!currentViewingStory.reactions) currentViewingStory.reactions = [];
             currentViewingStory.reactions.unshift({ sender: store.currentAccount, emoji });
@@ -975,7 +1069,6 @@
             highlightsContainer.innerHTML = '';
             const highlights = acc.highlights || [];
 
-            // 관리자 모드일 경우 하이라이트 추가(+) 버튼 표시
             if (store.isAdmin) {
                 const addBtn = document.createElement('div');
                 addBtn.className = 'flex flex-col items-center space-y-1 cursor-pointer min-w-[64px]';
@@ -996,7 +1089,7 @@
                     if (store.isAdmin) {
                         openEditHighlightModal(h.id);
                     } else {
-                        openStoryViewer({ author: username, image: h.cover, time: '하이라이트', reactions: [] });
+                        openHighlightViewer(username, h);
                     }
                 };
                 item.innerHTML = `
@@ -1020,13 +1113,14 @@
             });
         }
 
-        // STORY HIGHLIGHT CRUD FUNCTIONS
+        // STORY HIGHLIGHT CRUD FUNCTIONS (다중 사진 추가 및 기존 사진 관리)
         function openNewHighlightModal() {
             if (!store.isAdmin) return;
             editingHighlightId = null;
-            document.getElementById('highlight-modal-title').innerText = '새 하이라이트 추가';
+            document.getElementById('highlight-modal-title').innerText = '새 하이라이트 폴더 추가';
             document.getElementById('highlight-title-input').value = '';
-            document.getElementById('highlight-cover-file').value = '';
+            document.getElementById('highlight-images-files').value = '';
+            document.getElementById('highlight-current-images-preview').innerHTML = '';
             document.getElementById('highlight-delete-btn').classList.add('hidden');
             document.getElementById('modal-highlight').classList.remove('hidden');
         }
@@ -1039,11 +1133,49 @@
             if (!h) return;
 
             editingHighlightId = highlightId;
-            document.getElementById('highlight-modal-title').innerText = '하이라이트 수정';
+            document.getElementById('highlight-modal-title').innerText = '하이라이트 폴더 편집';
             document.getElementById('highlight-title-input').value = h.title;
-            document.getElementById('highlight-cover-file').value = '';
+            document.getElementById('highlight-images-files').value = '';
+            
+            // 현재 저장된 사진 목록 미리보기 및 삭제 기능 제공
+            const previewContainer = document.getElementById('highlight-current-images-preview');
+            previewContainer.innerHTML = `<label class="block text-xs font-semibold text-gray-500 mb-1">현재 포함된 사진 (${h.images ? h.images.length : 1}장)</label>`;
+            
+            const imgs = h.images || [h.cover];
+            const gridDiv = document.createElement('div');
+            gridDiv.className = 'grid grid-cols-4 gap-2 max-h-32 overflow-y-auto p-1 bg-gray-50 rounded-lg border';
+            
+            imgs.forEach((imgUrl, idx) => {
+                const wrap = document.createElement('div');
+                wrap.className = 'relative aspect-square rounded overflow-hidden border group';
+                wrap.innerHTML = `
+                    <img src="${imgUrl}" class="w-full h-full object-cover">
+                    <button type="button" onclick="removeHighlightImage('${highlightId}', ${idx})" class="absolute top-0.5 right-0.5 bg-red-600 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] opacity-80 hover:opacity-100">×</button>
+                `;
+                gridDiv.appendChild(wrap);
+            });
+            previewContainer.appendChild(gridDiv);
+
             document.getElementById('highlight-delete-btn').classList.remove('hidden');
             document.getElementById('modal-highlight').classList.remove('hidden');
+        }
+
+        function removeHighlightImage(highlightId, imgIdx) {
+            const acc = store.accounts[activeProfileId];
+            if (!acc || !acc.highlights) return;
+            const h = acc.highlights.find(item => item.id === highlightId);
+            if (!h || !h.images) return;
+
+            if (h.images.length <= 1) {
+                alert('하이라이트에는 최소 1장의 사진이 있어야 합니다. 폴더를 삭제하려면 하단의 폴더 삭제를 이용해주세요.');
+                return;
+            }
+
+            h.images.splice(imgIdx, 1);
+            h.cover = h.images[0]; // 대표 커버 갱신
+            saveStore();
+            openEditHighlightModal(highlightId); // 모달 새로고침
+            renderProfile(activeProfileId);
         }
 
         function handleSaveHighlight(e) {
@@ -1052,24 +1184,41 @@
 
             const acc = store.accounts[activeProfileId];
             if (!acc) return;
-
             if (!acc.highlights) acc.highlights = [];
 
             const title = document.getElementById('highlight-title-input').value.trim();
-            const fileInput = document.getElementById('highlight-cover-file');
+            const fileInput = document.getElementById('highlight-images-files');
 
-            const processSave = (coverUrl) => {
+            const readMultipleFiles = (files) => {
+                return Promise.all(Array.from(files).map(file => {
+                    return new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => resolve(e.target.result);
+                        reader.readAsDataURL(file);
+                    });
+                }));
+            };
+
+            const processSave = (newImages) => {
                 if (editingHighlightId) {
                     const h = acc.highlights.find(item => item.id === editingHighlightId);
                     if (h) {
                         h.title = title;
-                        if (coverUrl) h.cover = coverUrl;
+                        if (newImages && newImages.length > 0) {
+                            if (!h.images) h.images = [];
+                            h.images.push(...newImages);
+                        }
+                        if (h.images && h.images.length > 0) {
+                            h.cover = h.images[0];
+                        }
                     }
                 } else {
+                    const imgs = (newImages && newImages.length > 0) ? newImages : ['https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600'];
                     acc.highlights.push({
                         id: 'h_' + Date.now(),
                         title,
-                        cover: coverUrl || 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150'
+                        cover: imgs[0],
+                        images: imgs
                     });
                 }
                 saveStore();
@@ -1077,10 +1226,8 @@
                 renderProfile(activeProfileId);
             };
 
-            if (fileInput.files && fileInput.files[0]) {
-                const reader = new FileReader();
-                reader.onload = (e) => processSave(e.target.result);
-                reader.readAsDataURL(fileInput.files[0]);
+            if (fileInput.files && fileInput.files.length > 0) {
+                readMultipleFiles(fileInput.files).then(images => processSave(images));
             } else {
                 processSave(null);
             }
@@ -1089,7 +1236,7 @@
         function handleDeleteHighlight() {
             if (!store.isAdmin) return;
             if (!editingHighlightId) return;
-            if (!confirm('이 하이라이트를 삭제하시겠습니까?')) return;
+            if (!confirm('이 하이라이트 폴더를 통째로 삭제하시겠습니까?')) return;
 
             const acc = store.accounts[activeProfileId];
             if (acc && acc.highlights) {
