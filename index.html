@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #fafafa;
+        }
+        .story-ring {
+            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .explore-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-auto-rows: minmax(100px, 30vw);
+            gap: 2px;
+        }
+        @media (min-width: 768px) {
+            .explore-grid {
+                grid-auto-rows: 250px;
+                gap: 16px;
+            }
+        }
+        .explore-item-large {
+            grid-column: span 2;
+            grid-row: span 2;
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased selection:bg-pink-100 selection:text-pink-600">
+
+    <div id="app" class="min-h-screen flex flex-col md:flex-row max-w-6xl mx-auto bg-white shadow-sm border-x border-gray-100">
+
+        <!-- Sidebar Navigation (Desktop) -->
+        <aside class="hidden md:flex flex-col w-64 border-r border-gray-200 p-4 fixed h-full bg-white z-20">
+            <div class="py-6 px-3">
+                <h1 class="text-2xl font-semibold tracking-tight font-serif italic cursor-pointer" onclick="switchTab('feed')">Instagram</h1>
+            </div>
+            <nav class="space-y-1 flex-1">
+                <button onclick="switchTab('feed')" id="nav-feed" class="w-full flex items-center gap-4 p-3 font-medium rounded-lg hover:bg-gray-100 transition">
+                    <i class="fa-solid fa-house text-xl w-6"></i> 홈
+                </button>
+                <button onclick="switchTab('explore')" id="nav-explore" class="w-full flex items-center gap-4 p-3 font-medium rounded-lg hover:bg-gray-100 transition">
+                    <i class="fa-solid fa-compass text-xl w-6"></i> 탐색
+                </button>
+                <button onclick="openNewPostModal()" id="admin-create-btn-side" class="hidden w-full flex items-center gap-4 p-3 font-medium rounded-lg hover:bg-gray-100 text-pink-600 transition">
+                    <i class="fa-regular fa-square-plus text-xl w-6"></i> 만들 기 (관리자)
+                </button>
+                <button onclick="viewProfile(currentAccount)" id="nav-profile" class="w-full flex items-center gap-4 p-3 font-medium rounded-lg hover:bg-gray-100 transition">
+                    <img id="nav-user-avatar" src="" class="w-6 h-6 rounded-full object-cover border border-gray-300"> 프로필
+                </button>
+            </nav>
+
+            <!-- Multi-Account Quick Switcher -->
+            <div class="border-t border-gray-200 pt-4 mt-auto">
+                <div class="text-xs font-semibold text-gray-400 px-3 mb-2 uppercase tracking-wider">등장인물 계정 전환</div>
+                <div id="account-switcher" class="space-y-1 max-h-40 overflow-y-auto hide-scrollbar">
+                    <!-- Account items inserted by JS -->
+                </div>
+                <button onclick="toggleAdminModal()" id="admin-toggle-btn" class="mt-4 w-full text-xs py-2 px-3 bg-gray-100 hover:bg-gray-200 text-gray-600 font-semibold rounded-md flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-lock" id="admin-lock-icon"></i> <span id="admin-status-text">독자 모드 (클릭하여 관리자 로그인)</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 md:ml-64 pb-16 md:pb-0 min-h-screen">
+
+            <!-- Mobile Top Header -->
+            <header class="md:hidden sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex justify-between items-center z-30">
+                <h1 class="text-xl font-bold font-serif italic cursor-pointer" onclick="switchTab('feed')">Instagram</h1>
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleAdminModal()" class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-700 font-medium">
+                        <i class="fa-solid fa-lock" id="mobile-admin-lock-icon"></i>
+                    </button>
+                    <button onclick="openNewPostModal()" id="admin-create-btn-top" class="hidden text-pink-600">
+                        <i class="fa-regular fa-square-plus text-2xl"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- VIEW 1: HOME FEED -->
+            <div id="view-feed" class="max-w-lg mx-auto py-4 px-2 md:px-0 space-y-6">
+                <!-- Stories Carousel -->
+                <div class="bg-white border md:border-gray-200 md:rounded-lg p-4 overflow-x-auto hide-scrollbar flex gap-4">
+                    <!-- Stories generated dynamically -->
+                    <div id="stories-container" class="flex gap-4"></div>
+                </div>
+
+                <!-- Feed Posts -->
+                <div id="feed-posts-container" class="space-y-6">
+                    <!-- Posts inserted here -->
+                </div>
+            </div>
+
+            <!-- VIEW 2: EXPLORE / SEARCH -->
+            <div id="view-explore" class="hidden max-w-4xl mx-auto py-4 px-2 md:px-4">
+                <!-- Search Bar & Refresh -->
+                <div class="mb-4 flex gap-2">
+                    <div class="relative flex-1">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-gray-400"></i>
+                        <input type="text" id="explore-search-input" onkeyup="filterExplore()" placeholder="검색 (캐릭터 아이디, 태그, 본문 내용)..." class="w-full bg-gray-100 pl-10 pr-4 py-2 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-gray-300">
+                    </div>
+                    <button onclick="renderExploreGrid()" class="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-semibold text-gray-600 flex items-center gap-1">
+                        <i class="fa-solid fa-rotate"></i> 새로고침
+                    </button>
+                </div>
+
+                <!-- Dynamic Grid -->
+                <div id="explore-grid-container" class="explore-grid">
+                    <!-- Grid items inserted here -->
+                </div>
+            </div>
+
+            <!-- VIEW 3: PROFILE -->
+            <div id="view-profile" class="hidden max-w-4xl mx-auto py-6 px-4">
+                <!-- Profile Header -->
+                <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-12 mb-8 border-b border-gray-200 pb-8">
+                    <div class="relative group">
+                        <div class="w-24 h-24 sm:w-36 sm:h-36 rounded-full p-1 story-ring cursor-pointer">
+                            <img id="profile-avatar" src="" class="w-full h-full object-cover rounded-full border-2 border-white">
+                        </div>
+                    </div>
+
+                    <div class="flex-1 text-center sm:text-left space-y-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+                            <h2 id="profile-username" class="text-xl font-normal">username</h2>
+                            <div class="flex gap-2 justify-center">
+                                <button onclick="openEditProfileModal()" id="admin-edit-profile-btn" class="hidden px-4 py-1.5 bg-gray-100 hover:bg-gray-200 font-semibold text-sm rounded-lg transition">
+                                    프로필 편집 (관리자)
+                                </button>
+                                <button onclick="toggleFollow()" id="profile-follow-btn" class="px-4 py-1.5 bg-sky-500 hover:bg-sky-600 text-white font-semibold text-sm rounded-lg transition">
+                                    팔로우
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Stats -->
+                        <div class="flex justify-center sm:justify-start gap-8 text-sm">
+                            <div>게시물 <span id="profile-posts-count" class="font-semibold">0</span></div>
+                            <div onclick="openRelationshipsModal('followers')" class="cursor-pointer hover:underline">팔로워 <span id="profile-followers-count" class="font-semibold">0</span></div>
+                            <div onclick="openRelationshipsModal('following')" class="cursor-pointer hover:underline">팔로잉 <span id="profile-following-count" class="font-semibold">0</span></div>
+                        </div>
+
+                        <!-- Bio -->
+                        <div class="text-sm space-y-1">
+                            <div id="profile-fullname" class="font-semibold">Full Name</div>
+                            <div id="profile-bio" class="whitespace-pre-line text-gray-700">Bio content here...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profile Posts Grid -->
+                <div id="profile-posts-grid" class="grid grid-cols-3 gap-1 sm:gap-4">
+                    <!-- User posts inserted here -->
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Mobile Bottom Navigation -->
+        <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around py-3 z-30">
+            <button onclick="switchTab('feed')" class="text-xl text-gray-700"><i class="fa-solid fa-house"></i></button>
+            <button onclick="switchTab('explore')" class="text-xl text-gray-700"><i class="fa-solid fa-compass"></i></button>
+            <button onclick="openNewPostModal()" id="admin-create-btn-bottom" class="hidden text-xl text-pink-600"><i class="fa-regular fa-square-plus"></i></button>
+            <button onclick="viewProfile(currentAccount)" class="w-6 h-6 rounded-full overflow-hidden border border-gray-300">
+                <img id="mobile-nav-avatar" src="" class="w-full h-full object-cover">
+            </button>
+        </nav>
+
+    </div>
+
+    <!-- MODAL 1: ADMIN LOGIN -->
+    <div id="modal-admin" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-sm w-full p-6 space-y-4 shadow-xl">
+            <h3 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-user-shield text-pink-500"></i> 작가 관리자 로그인</h3>
+            <p class="text-xs text-gray-500">비밀번호를 입력하면 게시글 작성 및 프로필 편집 권한이 활성화됩니다. (독자에게는 편집 버튼이 보이지 않습니다)</p>
+            <div>
+                <label class="block text-xs font-semibold text-gray-500 mb-1">관리자 비밀번호</label>
+                <input type="password" id="admin-password-input" placeholder="기본 비밀번호: 1234" class="w-full border rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500">
+            </div>
+            <div class="flex gap-2">
+                <button onclick="toggleAdminModal()" class="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-semibold">취소</button>
+                <button onclick="loginAdmin()" class="flex-1 py-2 bg-pink-500 text-white rounded-lg text-sm font-semibold hover:bg-pink-600">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: CREATE NEW POST (ADMIN ONLY) -->
+    <div id="modal-new-post" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-lg w-full p-6 space-y-4 shadow-xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold">새 피드 게시글 올리기</h3>
+                <button onclick="closeModal('modal-new-post')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <form onsubmit="handleCreatePost(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">작성 캐릭터 계정</label>
+                    <select id="post-author-select" class="w-full border rounded-lg p-2 text-sm bg-white"></select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">이미지 URL (또는 아래에서 랜덤 선택)</label>
+                    <input type="text" id="post-image-url" placeholder="https://..." class="w-full border rounded-lg p-2 text-sm">
+                    <div class="flex gap-2 mt-2">
+                        <button type="button" onclick="setRandomPostImage('kpop')" class="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded">아이돌 스타일 사진</button>
+                        <button type="button" onclick="setRandomPostImage('aesthetic')" class="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded">감성 배경 사진</button>
+                        <button type="button" onclick="setRandomPostImage('cat')" class="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded">고양이 사진</button>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">본문 내용 (@태그 나 #해시태그 활용 가능)</label>
+                    <textarea id="post-caption" rows="3" placeholder="소설 속 대사나 상황을 적어보세요. 예: 오늘 @san_choi 랑 같이 카페 옴 #일상" class="w-full border rounded-lg p-2 text-sm"></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">초기 좋아요 수</label>
+                        <input type="number" id="post-likes" value="124" class="w-full border rounded-lg p-2 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">작성 시간 표기</label>
+                        <input type="text" id="post-time" value="방금 전" placeholder="예: 2시간 전, 10월 24일" class="w-full border rounded-lg p-2 text-sm">
+                    </div>
+                </div>
+                <button type="submit" class="w-full py-2.5 bg-sky-500 text-white rounded-lg font-semibold hover:bg-sky-600">게시하기</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 3: EDIT PROFILE (ADMIN ONLY) -->
+    <div id="modal-edit-profile" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-md w-full p-6 space-y-4 shadow-xl">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold">프로필 수정 (<span id="edit-profile-target-id"></span>)</h3>
+                <button onclick="closeModal('modal-edit-profile')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <form onsubmit="handleSaveProfile(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">이름 (Full Name)</label>
+                    <input type="text" id="edit-fullname" class="w-full border rounded-lg p-2 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">프로필 사진 URL</label>
+                    <input type="text" id="edit-avatar-url" class="w-full border rounded-lg p-2 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">소개글 (Bio)</label>
+                    <textarea id="edit-bio" rows="3" class="w-full border rounded-lg p-2 text-sm"></textarea>
+                </div>
+                <button type="submit" class="w-full py-2 bg-pink-500 text-white rounded-lg font-semibold hover:bg-pink-600">저장하기</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 4: POST DETAIL MODAL -->
+    <div id="modal-post-detail" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-2 sm:p-4">
+        <div class="bg-white rounded-xl max-w-3xl w-full flex flex-col md:flex-row overflow-hidden max-h-[90vh]">
+            <div class="bg-black md:w-3/5 flex items-center justify-center min-h-[300px]">
+                <img id="detail-img" src="" class="max-h-[70vh] object-contain w-full">
+            </div>
+            <div class="md:w-2/5 flex flex-col p-4 bg-white">
+                <div class="flex items-center gap-3 border-b pb-3">
+                    <img id="detail-avatar" src="" class="w-8 h-8 rounded-full object-cover">
+                    <span id="detail-username" class="font-semibold text-sm cursor-pointer hover:underline" onclick="closeModal('modal-post-detail')">username</span>
+                </div>
+                <div class="flex-1 overflow-y-auto py-3 space-y-3 text-sm border-b">
+                    <div id="detail-caption" class="text-gray-800 whitespace-pre-line"></div>
+                    <div id="detail-comments-list" class="space-y-2 pt-2 border-t"></div>
+                </div>
+                <div class="pt-3 space-y-2">
+                    <div class="flex items-center gap-4 text-xl">
+                        <button onclick="toggleDetailLike()"><i id="detail-like-btn" class="fa-regular fa-heart"></i></button>
+                    </div>
+                    <div id="detail-likes-count" class="font-semibold text-xs">좋아요 0개</div>
+                    <form onsubmit="handleAddDetailComment(event)" class="flex gap-2 pt-2">
+                        <input type="text" id="detail-comment-input" placeholder="댓글 달기..." class="flex-1 text-xs border rounded-lg px-2 py-1.5 focus:outline-none">
+                        <button type="submit" class="text-xs font-semibold text-sky-500 hover:text-sky-700">게시</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 5: RELATIONSHIPS MODAL (FOLLOWERS/FOLLOWING) -->
+    <div id="modal-relationships" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-xs w-full p-4 space-y-3 shadow-xl">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 id="rel-modal-title" class="font-bold text-sm">목록</h3>
+                <button onclick="closeModal('modal-relationships')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="rel-modal-list" class="space-y-3 max-h-60 overflow-y-auto">
+                <!-- User items inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT APP LOGIC -->
+    <script>
+        // Default Fanfiction Initial Data
+        const INITIAL_DATA = {
+            isAdmin: false,
+            adminPass: '1234',
+            currentAccount: 'san_choi',
+            accounts: {
+                'san_choi': {
+                    username: 'san_choi',
+                    fullName: '최산',
+                    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+                    bio: 'ATEEZ / 🐱 산덕이\n"기억은 계절을 타고 흐른다."',
+                    followers: ['wooyoung_j', 'ateez_official'],
+                    following: ['wooyoung_j', 'ateez_official']
+                },
+                'wooyoung_j': {
+                    username: 'wooyoung_j',
+                    fullName: '정우영',
+                    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+                    bio: 'ATEEZ / 🐈‍⬛ 우요냥\nMain Dancer. @san_choi',
+                    followers: ['san_choi', 'ateez_official'],
+                    following: ['san_choi', 'ateez_official']
+                },
+                'ateez_official': {
+                    username: 'ateez_official',
+                    fullName: 'ATEEZ Official',
+                    avatar: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150&auto=format&fit=crop&q=80',
+                    bio: '8 ATEEZ Official Instagram Account',
+                    followers: ['san_choi', 'wooyoung_j'],
+                    following: ['san_choi', 'wooyoung_j']
+                }
+            },
+            posts: [
+                {
+                    id: 'p1',
+                    author: 'san_choi',
+                    image: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&auto=format&fit=crop&q=80',
+                    caption: '연습 끝나고 오랫만에 카페. 사진 찍어준 @wooyoung_j 고맙다 ☕️',
+                    likes: 342,
+                    likedByMe: false,
+                    time: '3시간 전',
+                    comments: [
+                        { author: 'wooyoung_j', text: '다음엔 내가 사라 ㅋㅋㅋ' },
+                        { author: 'san_choi', text: '응 꼭 사 라' }
+                    ]
+                },
+                {
+                    id: 'p2',
+                    author: 'wooyoung_j',
+                    image: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=600&auto=format&fit=crop&q=80',
+                    caption: '우리 집 고양이 보러 올 사람 🐈‍⬛ (힌트: @san_choi 도 있음)',
+                    likes: 512,
+                    likedByMe: true,
+                    time: '6시간 전',
+                    comments: [
+                        { author: 'san_choi', text: '내가 왜 고양이야...' }
+                    ]
+                }
+            ]
+        };
+
+        // App State
+        let store = JSON.parse(localStorage.getItem('fake_insta_store')) || INITIAL_DATA;
+        let activeTab = 'feed';
+        let activeProfileId = 'san_choi';
+        let currentDetailPostId = null;
+
+        function saveStore() {
+            localStorage.setItem('fake_insta_store', JSON.stringify(store));
+        }
+
+        // INIT APP
+        window.addEventListener('DOMContentLoaded', () => {
+            renderAccountSwitcher();
+            renderStories();
+            switchTab('feed');
+            updateAdminUI();
+        });
+
+        // ADMIN CONTROLS
+        function toggleAdminModal() {
+            if (store.isAdmin) {
+                store.isAdmin = false;
+                saveStore();
+                updateAdminUI();
+                alert('독자 모드로 전환되었습니다.');
+            } else {
+                document.getElementById('modal-admin').classList.remove('hidden');
+            }
+        }
+
+        function loginAdmin() {
+            const inputPass = document.getElementById('admin-password-input').value;
+            if (inputPass === store.adminPass) {
+                store.isAdmin = true;
+                saveStore();
+                updateAdminUI();
+                closeModal('modal-admin');
+                document.getElementById('admin-password-input').value = '';
+                alert('관리자 로그인 완료! 피드 추가 및 프로필 편집 권한이 열렸습니다.');
+            } else {
+                alert('비밀번호가 올바르지 않습니다.');
+            }
+        }
+
+        function updateAdminUI() {
+            const adminBtns = [
+                'admin-create-btn-side', 
+                'admin-create-btn-top', 
+                'admin-create-btn-bottom',
+                'admin-edit-profile-btn'
+            ];
+            
+            adminBtns.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    if (store.isAdmin) el.classList.remove('hidden');
+                    else el.classList.add('hidden');
+                }
+            });
+
+            const statusText = document.getElementById('admin-status-text');
+            const lockIcon = document.getElementById('admin-lock-icon');
+            const mobileLockIcon = document.getElementById('mobile-admin-lock-icon');
+
+            if (store.isAdmin) {
+                statusText.innerText = '관리자 모드 중 (클릭시 잠금)';
+                lockIcon.className = 'fa-solid fa-unlock text-pink-500';
+                if(mobileLockIcon) mobileLockIcon.className = 'fa-solid fa-unlock text-pink-500';
+            } else {
+                statusText.innerText = '독자 모드 (클릭하여 작가 로그인)';
+                lockIcon.className = 'fa-solid fa-lock';
+                if(mobileLockIcon) mobileLockIcon.className = 'fa-solid fa-lock';
+            }
+        }
+
+        // TAB SWITCHING
+        function switchTab(tab) {
+            activeTab = tab;
+            document.getElementById('view-feed').classList.add('hidden');
+            document.getElementById('view-explore').classList.add('hidden');
+            document.getElementById('view-profile').classList.add('hidden');
+
+            if (tab === 'feed') {
+                document.getElementById('view-feed').classList.remove('hidden');
+                renderFeed();
+            } else if (tab === 'explore') {
+                document.getElementById('view-explore').classList.remove('hidden');
+                renderExploreGrid();
+            } else if (tab === 'profile') {
+                document.getElementById('view-profile').classList.remove('hidden');
+                renderProfile(activeProfileId);
+            }
+            window.scrollTo(0,0);
+        }
+
+        // RENDER FEED
+        function renderFeed() {
+            const container = document.getElementById('feed-posts-container');
+            container.innerHTML = '';
+
+            store.posts.forEach(post => {
+                const authorAcc = store.accounts[post.author] || { username: post.author, avatar: 'https://via.placeholder.com/150' };
+                const isLiked = post.likedByMe;
+
+                const card = document.createElement('article');
+                card.className = 'bg-white border md:border-gray-200 md:rounded-lg overflow-hidden';
+                card.innerHTML = `
+                    <div class="flex items-center justify-between p-3 border-b border-gray-100">
+                        <div class="flex items-center gap-3 cursor-pointer" onclick="viewProfile('${authorAcc.username}')">
+                            <img src="${authorAcc.avatar}" class="w-8 h-8 rounded-full object-cover">
+                            <span class="font-semibold text-sm hover:underline">${authorAcc.username}</span>
+                        </div>
+                        <i class="fa-solid fa-ellipsis text-gray-500"></i>
+                    </div>
+
+                    <div class="bg-black flex items-center justify-center max-h-[500px]">
+                        <img src="${post.image}" class="w-full object-cover max-h-[500px]" onclick="openPostDetail('${post.id}')">
+                    </div>
+
+                    <div class="p-3 space-y-2">
+                        <div class="flex justify-between items-center text-xl">
+                            <div class="flex gap-4">
+                                <button onclick="toggleLike('${post.id}')"><i class="${isLiked ? 'fa-solid fa-heart text-red-500' : 'fa-regular fa-heart'}"></i></button>
+                                <button onclick="openPostDetail('${post.id}')"><i class="fa-regular fa-comment"></i></button>
+                                <i class="fa-regular fa-paper-plane"></i>
+                            </div>
+                            <i class="fa-regular fa-bookmark"></i>
+                        </div>
+
+                        <div class="font-semibold text-xs">좋아요 ${post.likes.toLocaleString()}개</div>
+
+                        <div class="text-sm">
+                            <span class="font-semibold cursor-pointer hover:underline" onclick="viewProfile('${authorAcc.username}')">${authorAcc.username}</span>
+                            <span>${formatMentions(post.caption)}</span>
+                        </div>
+
+                        ${post.comments.length > 0 ? `
+                            <button onclick="openPostDetail('${post.id}')" class="text-xs text-gray-400">댓글 ${post.comments.length}개 모두 보기</button>
+                            <div class="space-y-1 text-xs">
+                                ${post.comments.slice(-2).map(c => `
+                                    <div>
+                                        <span class="font-semibold cursor-pointer hover:underline" onclick="viewProfile('${c.author}')">${c.author}</span>
+                                        <span>${formatMentions(c.text)}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+
+                        <div class="text-[10px] text-gray-400 uppercase tracking-wide">${post.time}</div>
+                    </div>
+
+                    <form onsubmit="handleAddComment(event, '${post.id}')" class="border-t border-gray-100 p-3 flex gap-2">
+                        <input type="text" placeholder="댓글 달기..." class="flex-1 text-xs focus:outline-none">
+                        <button type="submit" class="text-xs font-semibold text-sky-500 hover:text-sky-700">게시</button>
+                    </form>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // RENDER EXPLORE GRID
+        function renderExploreGrid() {
+            const container = document.getElementById('explore-grid-container');
+            container.innerHTML = '';
+
+            // Generate Explore items including active posts and aesthetic fillers
+            const allItems = [...store.posts];
+            
+            // Fillers
+            const fillers = [
+                'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&q=80',
+                'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=500&q=80',
+                'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500&q=80',
+                'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=500&q=80',
+                'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=500&q=80',
+                'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&q=80'
+            ];
+
+            fillers.forEach((img, idx) => {
+                allItems.push({
+                    id: 'explore_filler_' + idx,
+                    author: idx % 2 === 0 ? 'san_choi' : 'wooyoung_j',
+                    image: img,
+                    caption: '탐색 탭 추천 게시물 #' + (idx + 1),
+                    likes: 1200 + idx * 45,
+                    likedByMe: false,
+                    time: '인기 게시물',
+                    comments: []
+                });
+            });
+
+            // Shuffle randomly
+            allItems.sort(() => Math.random() - 0.5);
+
+            allItems.forEach((item, index) => {
+                const el = document.createElement('div');
+                const isLarge = (index % 7 === 2);
+                el.className = `relative group cursor-pointer overflow-hidden bg-gray-200 ${isLarge ? 'explore-item-large' : ''}`;
+                
+                el.innerHTML = `
+                    <img src="${item.image}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                    <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white gap-4 font-semibold text-sm">
+                        <span><i class="fa-solid fa-heart"></i> ${item.likes}</span>
+                        <span><i class="fa-solid fa-comment"></i> ${item.comments ? item.comments.length : 0}</span>
+                    </div>
+                `;
+                el.onclick = () => {
+                    if (!item.id.startsWith('explore_filler_')) {
+                        openPostDetail(item.id);
+                    } else {
+                        // Temp view filler
+                        store.posts.push(item);
+                        openPostDetail(item.id);
+                    }
+                };
+                container.appendChild(el);
+            });
+        }
+
+        function filterExplore() {
+            const query = document.getElementById('explore-search-input').value.toLowerCase();
+            const items = document.querySelectorAll('#explore-grid-container > div');
+            
+            items.forEach(el => {
+                const text = el.innerText.toLowerCase();
+                if (text.includes(query) || query === '') {
+                    el.style.display = 'block';
+                } else {
+                    el.style.display = 'none';
+                }
+            });
+        }
+
+        // RENDER PROFILE
+        function viewProfile(username) {
+            activeProfileId = username;
+            switchTab('profile');
+        }
+
+        function renderProfile(username) {
+            const acc = store.accounts[username] || {
+                username: username,
+                fullName: username,
+                avatar: 'https://via.placeholder.com/150',
+                bio: '소설 속 캐릭터 계정',
+                followers: [],
+                following: []
+            };
+
+            document.getElementById('profile-avatar').src = acc.avatar;
+            document.getElementById('profile-username').innerText = acc.username;
+            document.getElementById('profile-fullname').innerText = acc.fullName;
+            document.getElementById('profile-bio').innerText = acc.bio;
+
+            // Stats
+            const userPosts = store.posts.filter(p => p.author === username);
+            document.getElementById('profile-posts-count').innerText = userPosts.length;
+            document.getElementById('profile-followers-count').innerText = acc.followers ? acc.followers.length : 0;
+            document.getElementById('profile-following-count').innerText = acc.following ? acc.following.length : 0;
+
+            // Posts Grid
+            const grid = document.getElementById('profile-posts-grid');
+            grid.innerHTML = '';
+
+            userPosts.forEach(post => {
+                const item = document.createElement('div');
+                item.className = 'aspect-square relative group cursor-pointer overflow-hidden bg-gray-100';
+                item.innerHTML = `
+                    <img src="${post.image}" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white gap-3 font-semibold text-xs sm:text-sm">
+                        <span><i class="fa-solid fa-heart"></i> ${post.likes}</span>
+                        <span><i class="fa-solid fa-comment"></i> ${post.comments.length}</span>
+                    </div>
+                `;
+                item.onclick = () => openPostDetail(post.id);
+                grid.appendChild(item);
+            });
+        }
+
+        // STORIES & ACCOUNT SWITCHER
+        function renderStories() {
+            const container = document.getElementById('stories-container');
+            container.innerHTML = '';
+
+            Object.values(store.accounts).forEach(acc => {
+                const item = document.createElement('div');
+                item.className = 'flex flex-col items-center space-y-1 cursor-pointer min-w-[64px]';
+                item.onclick = () => viewProfile(acc.username);
+                item.innerHTML = `
+                    <div class="w-16 h-16 rounded-full p-[2px] story-ring">
+                        <img src="${acc.avatar}" class="w-full h-full object-cover rounded-full border-2 border-white">
+                    </div>
+                    <span class="text-xs text-gray-600 truncate w-16 text-center">${acc.username}</span>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function renderAccountSwitcher() {
+            const container = document.getElementById('account-switcher');
+            const select = document.getElementById('post-author-select');
+            container.innerHTML = '';
+            select.innerHTML = '';
+
+            Object.values(store.accounts).forEach(acc => {
+                // Sidebar switch button
+                const btn = document.createElement('button');
+                btn.className = `w-full flex items-center gap-2 p-2 rounded-lg text-left text-xs ${store.currentAccount === acc.username ? 'bg-pink-50 text-pink-600 font-semibold' : 'hover:bg-gray-50'}`;
+                btn.onclick = () => {
+                    store.currentAccount = acc.username;
+                    saveStore();
+                    renderAccountSwitcher();
+                    viewProfile(acc.username);
+                };
+                btn.innerHTML = `
+                    <img src="${acc.avatar}" class="w-5 h-5 rounded-full object-cover">
+                    <span class="truncate">${acc.username}</span>
+                `;
+                container.appendChild(btn);
+
+                // Option in New Post modal
+                const opt = document.createElement('option');
+                opt.value = acc.username;
+                opt.innerText = `@${acc.username} (${acc.fullName})`;
+                select.appendChild(opt);
+            });
+
+            // Update user avatar in navigation
+            const cur = store.accounts[store.currentAccount] || Object.values(store.accounts)[0];
+            document.getElementById('nav-user-avatar').src = cur.avatar;
+            document.getElementById('mobile-nav-avatar').src = cur.avatar;
+        }
+
+        // INTERACTIONS: LIKE & COMMENTS
+        function toggleLike(postId) {
+            const post = store.posts.find(p => p.id === postId);
+            if (post) {
+                post.likedByMe = !post.likedByMe;
+                post.likes += post.likedByMe ? 1 : -1;
+                saveStore();
+                renderFeed();
+                if (currentDetailPostId === postId) renderDetailModal(postId);
+            }
+        }
+
+        function handleAddComment(e, postId) {
+            e.preventDefault();
+            const input = e.target.querySelector('input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const post = store.posts.find(p => p.id === postId);
+            if (post) {
+                post.comments.push({
+                    author: store.currentAccount,
+                    text: text
+                });
+                saveStore();
+                input.value = '';
+                renderFeed();
+            }
+        }
+
+        // POST DETAIL MODAL
+        function openPostDetail(postId) {
+            currentDetailPostId = postId;
+            renderDetailModal(postId);
+            document.getElementById('modal-post-detail').classList.remove('hidden');
+        }
+
+        function renderDetailModal(postId) {
+            const post = store.posts.find(p => p.id === postId);
+            if (!post) return;
+
+            const authorAcc = store.accounts[post.author] || { username: post.author, avatar: 'https://via.placeholder.com/150' };
+
+            document.getElementById('detail-img').src = post.image;
+            document.getElementById('detail-avatar').src = authorAcc.avatar;
+            document.getElementById('detail-username').innerText = authorAcc.username;
+            document.getElementById('detail-caption').innerHTML = `<b>${authorAcc.username}</b> ${formatMentions(post.caption)}`;
+            document.getElementById('detail-likes-count').innerText = `좋아요 ${post.likes.toLocaleString()}개`;
+
+            const likeBtn = document.getElementById('detail-like-btn');
+            likeBtn.className = post.likedByMe ? 'fa-solid fa-heart text-red-500' : 'fa-regular fa-heart';
+
+            const commentsContainer = document.getElementById('detail-comments-list');
+            commentsContainer.innerHTML = post.comments.map(c => `
+                <div>
+                    <b class="cursor-pointer hover:underline" onclick="closeModal('modal-post-detail'); viewProfile('${c.author}')">${c.author}</b> 
+                    <span>${formatMentions(c.text)}</span>
+                </div>
+            `).join('');
+        }
+
+        function toggleDetailLike() {
+            if (currentDetailPostId) toggleLike(currentDetailPostId);
+        }
+
+        function handleAddDetailComment(e) {
+            e.preventDefault();
+            const input = document.getElementById('detail-comment-input');
+            const text = input.value.trim();
+            if (!text || !currentDetailPostId) return;
+
+            const post = store.posts.find(p => p.id === currentDetailPostId);
+            if (post) {
+                post.comments.push({
+                    author: store.currentAccount,
+                    text: text
+                });
+                saveStore();
+                input.value = '';
+                renderDetailModal(currentDetailPostId);
+                renderFeed();
+            }
+        }
+
+        // CREATE NEW POST (ADMIN)
+        function openNewPostModal() {
+            if (!store.isAdmin) {
+                alert('작가 관리자 로그인 후 사용 가능합니다.');
+                return;
+            }
+            document.getElementById('modal-new-post').classList.remove('hidden');
+        }
+
+        function handleCreatePost(e) {
+            e.preventDefault();
+            const author = document.getElementById('post-author-select').value;
+            let image = document.getElementById('post-image-url').value.trim();
+            const caption = document.getElementById('post-caption').value.trim();
+            const likes = parseInt(document.getElementById('post-likes').value) || 0;
+            const time = document.getElementById('post-time').value.trim() || '방금 전';
+
+            if (!image) {
+                image = 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&auto=format&fit=crop&q=80';
+            }
+
+            const newPost = {
+                id: 'post_' + Date.now(),
+                author,
+                image,
+                caption,
+                likes,
+                likedByMe: false,
+                time,
+                comments: []
+            };
+
+            store.posts.unshift(newPost);
+            saveStore();
+            closeModal('modal-new-post');
+            
+            // Reset form
+            document.getElementById('post-caption').value = '';
+            document.getElementById('post-image-url').value = '';
+
+            switchTab('feed');
+        }
+
+        function setRandomPostImage(type) {
+            const imgs = {
+                'kpop': 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=80',
+                'aesthetic': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop&q=80',
+                'cat': 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=600&auto=format&fit=crop&q=80'
+            };
+            document.getElementById('post-image-url').value = imgs[type] || '';
+        }
+
+        // EDIT PROFILE (ADMIN)
+        function openEditProfileModal() {
+            const acc = store.accounts[activeProfileId];
+            if (!acc) return;
+
+            document.getElementById('edit-profile-target-id').innerText = `@${acc.username}`;
+            document.getElementById('edit-fullname').value = acc.fullName || '';
+            document.getElementById('edit-avatar-url').value = acc.avatar || '';
+            document.getElementById('edit-bio').value = acc.bio || '';
+
+            document.getElementById('modal-edit-profile').classList.remove('hidden');
+        }
+
+        function handleSaveProfile(e) {
+            e.preventDefault();
+            const acc = store.accounts[activeProfileId];
+            if (acc) {
+                acc.fullName = document.getElementById('edit-fullname').value.trim();
+                acc.avatar = document.getElementById('edit-avatar-url').value.trim();
+                acc.bio = document.getElementById('edit-bio').value.trim();
+
+                saveStore();
+                renderAccountSwitcher();
+                renderStories();
+                renderProfile(activeProfileId);
+                closeModal('modal-edit-profile');
+            }
+        }
+
+        // RELATIONSHIPS MODAL
+        function openRelationshipsModal(type) {
+            const acc = store.accounts[activeProfileId];
+            if (!acc) return;
+
+            const list = type === 'followers' ? acc.followers : acc.following;
+            document.getElementById('rel-modal-title').innerText = type === 'followers' ? '팔로워 목록' : '팔로잉 목록';
+
+            const container = document.getElementById('rel-modal-list');
+            container.innerHTML = '';
+
+            list.forEach(u => {
+                const targetAcc = store.accounts[u] || { username: u, avatar: 'https://via.placeholder.com/150' };
+                const item = document.createElement('div');
+                item.className = 'flex items-center justify-between cursor-pointer hover:bg-gray-50 p-1 rounded';
+                item.onclick = () => {
+                    closeModal('modal-relationships');
+                    viewProfile(u);
+                };
+                item.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <img src="${targetAcc.avatar}" class="w-8 h-8 rounded-full object-cover">
+                        <span class="text-xs font-semibold">${u}</span>
+                    </div>
+                    <span class="text-xs bg-gray-100 px-2 py-1 rounded">프로필 보기</span>
+                `;
+                container.appendChild(item);
+            });
+
+            document.getElementById('modal-relationships').classList.remove('hidden');
+        }
+
+        // UTILS
+        function formatMentions(text) {
+            if (!text) return '';
+            return text.replace(/@([a-zA-Z0-9_]+)/g, '<span class="text-sky-600 font-semibold cursor-pointer hover:underline" onclick="event.stopPropagation(); viewProfile(\'$1\')">@$1</span>');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
