@@ -1011,11 +1011,23 @@
                     store.stories.forEach(s => { if (s.author === oldUsername) s.author = newUsername; });
                     store.storyArchive.forEach(sa => { if (sa.author === oldUsername) sa.author = newUsername; });
 
+                    const newDms = {};
                     Object.keys(store.dms).forEach(k => {
                         if (k.includes(oldUsername)) {
                             const newKey = k.replace(oldUsername, newUsername);
-                            store.dms[newKey] = store.dms[k];
-                            delete store.dms[k];
+                            newDms[newKey] = store.dms[k];
+                        } else {
+                            newDms[k] = store.dms[k];
+                        }
+                    });
+                    store.dms = newDms;
+
+                    Object.values(store.accounts).forEach(otherAcc => {
+                        if (otherAcc.followers) {
+                            otherAcc.followers = otherAcc.followers.map(u => u === oldUsername ? newUsername : u);
+                        }
+                        if (otherAcc.following) {
+                            otherAcc.following = otherAcc.following.map(u => u === oldUsername ? newUsername : u);
                         }
                     });
 
@@ -1023,10 +1035,12 @@
                 }
 
                 saveStore();
-                renderProfile(activeProfileId);
+                closeModal('modal-edit-profile');
+
                 renderAccountSwitcher();
                 updatePovUI();
-                closeModal('modal-edit-profile');
+                renderProfile(activeProfileId);
+                renderFeed();
             };
 
             if (fileInput.files && fileInput.files[0]) {
