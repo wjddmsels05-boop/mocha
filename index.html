@@ -126,14 +126,16 @@
                     <div class="w-1/3 border-r border-gray-200 flex flex-col">
                         <div class="p-4 border-b font-semibold text-sm flex justify-between items-center">
                             <span>대화 상대</span>
-                            <span class="text-xs text-pink-600">현재: @<span id="dm-current-account-label"></span></span>
+                            <span class="text-xs text-pink-600">현재 시점: @<span id="dm-current-account-label"></span></span>
                         </div>
                         <div id="dm-conversations-list" class="flex-1 overflow-y-auto divide-y divide-gray-100"></div>
                     </div>
                     <div class="w-2/3 flex flex-col bg-gray-50">
-                        <div id="dm-chat-header" class="p-4 bg-white border-b flex items-center gap-3">
-                            <img id="dm-header-avatar" src="" class="w-8 h-8 rounded-full object-cover">
-                            <span id="dm-header-username" class="font-semibold text-sm">상대방을 선택하세요</span>
+                        <div id="dm-chat-header" class="p-4 bg-white border-b flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <img id="dm-header-avatar" src="" class="w-8 h-8 rounded-full object-cover">
+                                <span id="dm-header-username" class="font-semibold text-sm">상대방을 선택하세요</span>
+                            </div>
                         </div>
                         <div id="dm-messages-container" class="flex-1 p-4 overflow-y-auto space-y-3 flex flex-col"></div>
                         <form id="dm-input-form" onsubmit="handleSendDm(event)" class="p-3 bg-white border-t flex flex-col gap-2">
@@ -141,12 +143,15 @@
                                 <input type="text" id="dm-input-text" placeholder="메시지 보내기..." class="flex-1 border rounded-full px-4 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500">
                                 <button type="submit" id="dm-send-btn" class="text-sm font-semibold text-pink-600 px-3">전송</button>
                             </div>
-                            <div class="flex items-center justify-between text-xs text-gray-500 px-2">
+                            <div class="flex items-center justify-between text-xs text-gray-500 px-2 pt-1 border-t border-gray-50">
                                 <div class="flex items-center gap-2">
                                     <span>보낸 시간 표기:</span>
                                     <input type="text" id="dm-input-time" value="오후 10:14" class="border rounded px-2 py-0.5 w-24 text-xs">
                                 </div>
-                                <button type="button" onclick="handleAddDateDividerPrompt()" class="text-pink-600 hover:underline font-medium text-[11px]">+ 날짜 구분선 추가</button>
+                                <div class="flex items-center gap-1">
+                                    <input type="checkbox" id="dm-is-date-divider" class="rounded text-pink-600">
+                                    <label for="dm-is-date-divider" class="cursor-pointer text-pink-600 font-semibold">📅 날짜 구분선 추가</label>
+                                </div>
                             </div>
                         </form>
                     </div>
@@ -197,9 +202,9 @@
 
         <!-- Fixed Bottom Bar -->
         <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center py-2 z-40 md:left-64 shadow-lg">
-            <!-- 맨 왼쪽: 시점 캐릭터 선택 버튼 -->
+            <!-- 하단 맨 왼쪽: 시점 캐릭터 선택 버튼 -->
             <button onclick="openPovSelectModal()" class="flex flex-col items-center text-gray-700 hover:text-pink-600">
-                <img id="bottom-pov-avatar" src="" class="w-6 h-6 rounded-full object-cover border border-pink-500">
+                <img id="bottom-pov-avatar" src="" class="w-5 h-5 rounded-full object-cover border border-pink-500">
                 <span class="text-[9px] font-bold mt-0.5 text-pink-600">시점: <span id="bottom-pov-name">산</span></span>
             </button>
             <button onclick="openModeSelectModal()" class="flex flex-col items-center text-pink-600 hover:text-pink-700">
@@ -213,15 +218,13 @@
         </nav>
     </div>
 
-    <!-- MODAL: POV SELECT (시점 캐릭터 전환) -->
+    <!-- MODAL: POV SELECT (시점 캐릭터 선택) -->
     <div id="modal-pov-select" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-xs w-full p-5 space-y-4 shadow-2xl">
-            <div class="flex justify-between items-center border-b pb-2">
-                <h3 class="font-bold text-sm text-gray-800">시점 캐릭터 선택</h3>
-                <button onclick="closeModal('modal-pov-select')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <p class="text-xs text-gray-500">댓글, DM, 스토리 반응 시 이 캐릭터 시점으로 활동합니다.</p>
-            <div id="pov-accounts-list" class="space-y-2 max-h-60 overflow-y-auto"></div>
+        <div class="bg-white rounded-2xl max-w-xs w-full p-5 space-y-3 shadow-2xl">
+            <h3 class="text-sm font-bold text-gray-800 text-center border-b pb-2">시점 캐릭터 선택</h3>
+            <p class="text-[11px] text-gray-500 text-center">선택한 캐릭터 시점으로 댓글, DM, 스토리 반응이 작성됩니다.</p>
+            <div id="pov-select-list" class="space-y-1.5 max-h-60 overflow-y-auto"></div>
+            <button onclick="closeModal('modal-pov-select')" class="w-full py-2 bg-gray-100 text-gray-600 font-semibold text-xs rounded-xl mt-2">닫기</button>
         </div>
     </div>
 
@@ -252,7 +255,6 @@
     <!-- STORY VIEWER MODAL -->
     <div id="modal-story-viewer" onclick="handleStoryViewerOutsideClick(event)" class="hidden fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-2">
         <div id="story-viewer-card" class="relative w-full max-w-sm h-[85vh] bg-gray-900 rounded-2xl overflow-hidden flex flex-col justify-between p-4 border border-gray-800">
-            <!-- 스토리 상단 바 -->
             <div class="flex flex-col gap-2 z-10">
                 <div id="story-progress-bars" class="flex gap-1 w-full"></div>
                 <div class="flex items-center justify-between text-white">
@@ -268,7 +270,6 @@
                 </div>
             </div>
 
-            <!-- 플로팅 이모지 애니메이션 레이어 -->
             <div id="story-floating-emoji-container" class="absolute inset-0 overflow-hidden pointer-events-none z-20"></div>
 
             <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -277,16 +278,13 @@
                 <button id="story-next-btn" onclick="slideStoryItem(1)" class="absolute right-2 bg-black/50 hover:bg-black/80 text-white rounded-full w-9 h-9 flex items-center justify-center text-sm z-20 pointer-events-auto">❯</button>
             </div>
 
-            <!-- 하단부: 이모지 선택 및 채팅/DM 답장 입력 바 -->
             <div class="relative z-30 space-y-2">
                 <div id="story-reactions-display" class="bg-black/40 backdrop-blur-sm px-3 py-2 rounded-xl flex items-center justify-between text-white text-xs cursor-pointer hover:bg-black/60 transition">
                     <div id="story-reactions-avatars" class="flex items-center gap-2 overflow-x-auto hide-scrollbar"></div>
                     <span id="story-reactions-summary-text" class="text-[11px] text-gray-300 font-medium whitespace-nowrap ml-2">활동 없음</span>
                 </div>
 
-                <!-- 관리자용 스토리 채팅 & DM 연동 답장 입력 바 -->
                 <div id="story-reactions-input-bar" class="relative bg-black/50 backdrop-blur-md rounded-full px-3 py-1.5 flex items-center gap-2 text-white">
-                    <!-- 위로 펼쳐지는 이모지 6개 팝업 메뉴 -->
                     <div id="story-emoji-popover" class="hidden absolute bottom-12 left-0 bg-black/80 backdrop-blur-md rounded-2xl px-3 py-2 flex gap-3 text-2xl border border-gray-700 shadow-2xl z-40">
                         <button onclick="sendStoryEmoji('❤️')">❤️</button>
                         <button onclick="sendStoryEmoji('🔥')">🔥</button>
@@ -296,13 +294,10 @@
                         <button onclick="sendStoryEmoji('👏')">👏</button>
                     </div>
 
-                    <!-- 맨 왼쪽 이모지 토글 버튼 -->
                     <button type="button" onclick="toggleEmojiPopover()" class="text-xl p-1 text-gray-300 hover:text-white transition">😊</button>
 
-                    <!-- 채팅/DM 답장 입력창 -->
                     <input type="text" id="story-reply-input" placeholder="스토리에 답장하기..." class="flex-1 bg-transparent text-xs text-white placeholder-gray-400 focus:outline-none px-1" onkeypress="if(event.key==='Enter') sendStoryReplyMessage()">
 
-                    <!-- 전송 버튼 -->
                     <button type="button" onclick="sendStoryReplyMessage()" class="text-xs font-semibold text-pink-500 hover:text-pink-400 px-2 py-1">전송</button>
                 </div>
             </div>
@@ -459,16 +454,16 @@
         </div>
     </div>
 
-    <!-- MODAL: EDIT DM MESSAGE OR DATE DIVIDER -->
+    <!-- MODAL: EDIT DM MESSAGE -->
     <div id="modal-edit-dm" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-xl max-w-sm w-full p-5 space-y-4 shadow-xl">
             <div class="flex justify-between items-center border-b pb-2">
-                <h3 id="edit-dm-title" class="font-bold text-sm">DM 메시지 수정</h3>
+                <h3 class="font-bold text-sm">DM 항목 수정/삭제</h3>
                 <button onclick="closeModal('modal-edit-dm')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             <form onsubmit="handleSaveEditDm(event)" class="space-y-3">
                 <div>
-                    <label id="edit-dm-text-label" class="block text-xs font-semibold text-gray-500 mb-1">메시지 내용</label>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">내용 (날짜 구분선 문구 또는 메시지)</label>
                     <input type="text" id="edit-dm-text" required class="w-full border rounded-lg p-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500">
                 </div>
                 <div id="edit-dm-time-container">
@@ -550,7 +545,7 @@
             ],
             dms: {
                 'san_choi_wooyoung_j': [
-                    { isDateDivider: true, dateText: '2026년 6월 10일' },
+                    { isDivider: true, text: '2026년 6월 10일' },
                     { sender: 'wooyoung_j', text: '산아 연습 마치고 카페 가냐?', time: '오후 08:10' },
                     { sender: 'san_choi', text: '응 왜?', time: '오후 08:12' }
                 ]
@@ -587,46 +582,46 @@
         window.addEventListener('DOMContentLoaded', () => {
             renderAccountSwitcher();
             renderStories();
-            updatePovBottomNav();
             switchTab('feed');
             updateAdminUI();
+            updatePovUI();
         });
 
-        function updatePovBottomNav() {
-            const acc = store.accounts[store.currentAccount];
-            if (acc) {
-                document.getElementById('bottom-pov-avatar').src = acc.avatar;
-                document.getElementById('bottom-pov-name').innerText = acc.fullName || acc.username;
+        function updatePovUI() {
+            const curAcc = store.accounts[store.currentAccount] || Object.values(store.accounts)[0];
+            if (curAcc) {
+                document.getElementById('bottom-pov-avatar').src = curAcc.avatar;
+                document.getElementById('bottom-pov-name').innerText = curAcc.fullName || curAcc.username;
             }
         }
 
         function openPovSelectModal() {
-            const container = document.getElementById('pov-accounts-list');
-            container.innerHTML = '';
+            const listContainer = document.getElementById('pov-select-list');
+            listContainer.innerHTML = '';
             Object.values(store.accounts).forEach(acc => {
                 const isSelected = store.currentAccount === acc.username;
                 const btn = document.createElement('button');
-                btn.className = `w-full flex items-center justify-between p-3 rounded-xl border transition ${isSelected ? 'border-pink-500 bg-pink-50/50' : 'border-gray-200 hover:bg-gray-50'}`;
+                btn.className = `w-full flex items-center justify-between p-2.5 rounded-xl border transition ${isSelected ? 'border-pink-500 bg-pink-50/60 font-bold' : 'border-gray-100 hover:bg-gray-50'}`;
                 btn.onclick = () => {
                     store.currentAccount = acc.username;
                     saveStore();
-                    updatePovBottomNav();
+                    updatePovUI();
                     renderAccountSwitcher();
                     if (activeTab === 'dm') renderDmView();
                     if (activeTab === 'profile') renderProfile(activeProfileId);
                     closeModal('modal-pov-select');
                 };
                 btn.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <img src="${acc.avatar}" class="w-8 h-8 rounded-full object-cover">
-                        <div class="text-left">
-                            <div class="text-xs font-bold text-gray-800">@${acc.username}</div>
-                            <div class="text-[10px] text-gray-400">${acc.fullName}</div>
+                    <div class="flex items-center gap-2.5">
+                        <img src="${acc.avatar}" class="w-7 h-7 rounded-full object-cover">
+                        <div class="text-left text-xs">
+                            <div class="text-gray-800">${acc.fullName}</div>
+                            <div class="text-[10px] text-gray-400">@${acc.username}</div>
                         </div>
                     </div>
-                    ${isSelected ? '<span class="text-xs font-bold text-pink-600">선택됨</span>' : ''}
+                    ${isSelected ? '<span class="text-pink-600 text-xs">✓</span>' : ''}
                 `;
-                container.appendChild(btn);
+                listContainer.appendChild(btn);
             });
             document.getElementById('modal-pov-select').classList.remove('hidden');
         }
@@ -744,14 +739,10 @@
                 const acc = store.accounts[username];
                 const key = getDmKey(store.currentAccount, username);
                 const chatHistory = store.dms[key] || [];
-                
-                // 마지막 실제 메시지 찾기
                 let lastMsg = '새 대화를 시작하세요.';
-                for (let i = chatHistory.length - 1; i >= 0; i--) {
-                    if (!chatHistory[i].isDateDivider) {
-                        lastMsg = chatHistory[i].text;
-                        break;
-                    }
+                if (chatHistory.length > 0) {
+                    const lastItem = chatHistory[chatHistory.length - 1];
+                    lastMsg = lastItem.isDivider ? `[날짜: ${lastItem.text}]` : lastItem.text;
                 }
 
                 const btn = document.createElement('button');
@@ -786,16 +777,17 @@
 
             chatHistory.forEach((msg, idx) => {
                 // 날짜 구분선 렌더링
-                if (msg.isDateDivider) {
+                if (msg.isDivider) {
                     const div = document.createElement('div');
-                    div.className = 'my-3 flex items-center justify-center relative group cursor-pointer';
-                    if (store.isAdmin) {
-                        div.onclick = () => openEditDmModal(idx);
-                    }
+                    div.className = 'flex items-center justify-center my-3 group relative cursor-pointer';
+                    if (store.isAdmin) div.onclick = () => openEditDmModal(idx);
                     div.innerHTML = `
-                        <div class="bg-gray-200/80 text-gray-600 text-[10px] font-semibold px-3 py-1 rounded-full shadow-sm">
-                            ${msg.dateText || '2026년 6월 10일'}
-                        </div>
+                        <div class="border-t border-gray-200 flex-1"></div>
+                        <span class="px-3 text-[11px] text-gray-400 font-medium bg-gray-50 rounded-full py-0.5 border border-gray-200 flex items-center gap-1 hover:text-pink-600 transition">
+                            📅 ${msg.text}
+                            ${store.isAdmin ? '<i class="fa-solid fa-pen text-[9px] opacity-0 group-hover:opacity-100 ml-1"></i>' : ''}
+                        </span>
+                        <div class="border-t border-gray-200 flex-1"></div>
                     `;
                     container.appendChild(div);
                     return;
@@ -808,7 +800,7 @@
                 let storyCardHTML = '';
                 if (msg.storyImage) {
                     storyCardHTML = `
-                        <div class="mb-1 rounded-xl overflow-hidden border border-gray-200/80 bg-gray-900/90 max-w-[200px] text-white">
+                        <div class="mb-1 rounded-xl overflow-hidden border border-gray-200/80 bg-gray-900/90 max-w-[200px] text-white shadow-sm">
                             <div class="p-1.5 text-[10px] text-gray-300 font-medium flex items-center gap-1 border-b border-gray-800">
                                 <i class="fa-solid fa-arrow-turn-down text-[9px]"></i> 스토리에 답장함
                             </div>
@@ -843,6 +835,7 @@
             if (!store.isAdmin) return;
             const input = document.getElementById('dm-input-text');
             const timeInput = document.getElementById('dm-input-time');
+            const isDateDivider = document.getElementById('dm-is-date-divider').checked;
             const text = input.value.trim();
             const time = timeInput.value.trim() || '방금 전';
 
@@ -851,32 +844,22 @@
             const key = getDmKey(store.currentAccount, store.activeDmTarget);
             if (!store.dms[key]) store.dms[key] = [];
 
-            // 시점 캐릭터명의로 DM 발송
-            store.dms[key].push({
-                sender: store.currentAccount,
-                text,
-                time
-            });
+            if (isDateDivider) {
+                store.dms[key].push({
+                    isDivider: true,
+                    text: text
+                });
+                document.getElementById('dm-is-date-divider').checked = false;
+            } else {
+                store.dms[key].push({
+                    sender: store.currentAccount,
+                    text,
+                    time
+                });
+            }
 
             saveStore();
             input.value = '';
-            renderDmView();
-        }
-
-        function handleAddDateDividerPrompt() {
-            if (!store.isAdmin) return;
-            const dateStr = prompt('추가할 날짜를 입력하세요 (예: 2026년 6월 10일):', '2026년 6월 10일');
-            if (!dateStr || !dateStr.trim()) return;
-
-            const key = getDmKey(store.currentAccount, store.activeDmTarget);
-            if (!store.dms[key]) store.dms[key] = [];
-
-            store.dms[key].push({
-                isDateDivider: true,
-                dateText: dateStr.trim()
-            });
-
-            saveStore();
             renderDmView();
         }
 
@@ -887,18 +870,16 @@
             if (!msg) return;
 
             editingDmIndex = index;
-            if (msg.isDateDivider) {
-                document.getElementById('edit-dm-title').innerText = '날짜 구분선 수정';
-                document.getElementById('edit-dm-text-label').innerText = '표시할 날짜 문구';
-                document.getElementById('edit-dm-text').value = msg.dateText || '';
-                document.getElementById('edit-dm-time-container').classList.add('hidden');
+            document.getElementById('edit-dm-text').value = msg.text;
+            
+            const timeContainer = document.getElementById('edit-dm-time-container');
+            if (msg.isDivider) {
+                timeContainer.style.display = 'none';
             } else {
-                document.getElementById('edit-dm-title').innerText = 'DM 메시지 수정';
-                document.getElementById('edit-dm-text-label').innerText = '메시지 내용';
-                document.getElementById('edit-dm-text').value = msg.text || '';
+                timeContainer.style.display = 'block';
                 document.getElementById('edit-dm-time').value = msg.time || '';
-                document.getElementById('edit-dm-time-container').classList.remove('hidden');
             }
+
             document.getElementById('modal-edit-dm').classList.remove('hidden');
         }
 
@@ -909,15 +890,12 @@
 
             const key = getDmKey(store.currentAccount, store.activeDmTarget);
             const text = document.getElementById('edit-dm-text').value.trim();
+            const time = document.getElementById('edit-dm-time').value.trim();
 
             if (store.dms[key] && store.dms[key][editingDmIndex]) {
-                const targetMsg = store.dms[key][editingDmIndex];
-                if (targetMsg.isDateDivider) {
-                    targetMsg.dateText = text;
-                } else {
-                    targetMsg.text = text;
-                    targetMsg.time = document.getElementById('edit-dm-time').value.trim();
-                }
+                const item = store.dms[key][editingDmIndex];
+                item.text = text;
+                if (!item.isDivider) item.time = time;
                 saveStore();
                 renderDmView();
                 closeModal('modal-edit-dm');
@@ -982,7 +960,7 @@
 
                         ${store.isAdmin ? `
                             <form onsubmit="handleAddComment(event, '${post.id}')" class="border-t border-gray-100 pt-2 mt-2 flex gap-2">
-                                <input type="text" placeholder="${store.accounts[store.currentAccount] ? store.accounts[store.currentAccount].fullName : ''}(으)로 댓글 달기..." class="flex-1 text-xs focus:outline-none border rounded px-2 py-1">
+                                <input type="text" placeholder="현재 시점(@${store.currentAccount})으로 댓글 달기..." class="flex-1 text-xs focus:outline-none border rounded px-2 py-1">
                                 <button type="submit" class="text-xs font-semibold text-pink-600">게시</button>
                             </form>
                         ` : ''}
@@ -1249,7 +1227,6 @@
             if (popover) popover.classList.toggle('hidden');
         }
 
-        // 스토리 이모지 전송 (현재 선택된 시점 캐릭터 명의)
         function sendStoryEmoji(emoji) {
             if (!store.isAdmin || activeStoryViewer.isHighlight) return;
             const currentItem = activeStoryViewer.items[activeStoryViewer.currentIndex];
@@ -1258,7 +1235,6 @@
             if (!currentItem.reactions) currentItem.reactions = [];
             currentItem.reactions.unshift({ sender: store.currentAccount, emoji });
 
-            // DM 연동 메시지 생성
             const storyAuthor = currentItem.author || activeStoryViewer.author;
             if (storyAuthor && storyAuthor !== store.currentAccount) {
                 const dmKey = getDmKey(store.currentAccount, storyAuthor);
@@ -1277,7 +1253,7 @@
             document.getElementById('story-emoji-popover').classList.add('hidden');
         }
 
-        // 스토리 답장 텍스트 메시지 전송 -> 바로 DM 대화창으로 전환!
+        // 스토리 답장 보내기 및 DM 대화창으로 바로 이동
         function sendStoryReplyMessage() {
             if (!store.isAdmin || activeStoryViewer.isHighlight) return;
             const input = document.getElementById('story-reply-input');
@@ -1297,15 +1273,11 @@
                     time: '방금 전',
                     storyImage: currentItem.image
                 });
-
-                // DM 타겟을 해당 스토리 작성자로 설정
                 store.activeDmTarget = storyAuthor;
             }
 
             saveStore();
             input.value = '';
-            
-            // 스토리 모달 닫기 후 바로 DM 탭으로 이동!
             closeModal('modal-story-viewer');
             switchTab('dm');
         }
@@ -1719,7 +1691,7 @@
             if (activeTab === 'profile') renderProfile(activeProfileId);
         }
 
-        // 댓글 작성 시 현재 시점 캐릭터 명의로 작성됨!
+        // 현재 선택된 시점 캐릭터(store.currentAccount)로 댓글 작성
         function handleAddComment(e, postId) {
             e.preventDefault();
             if (!store.isAdmin) return;
@@ -1781,9 +1753,59 @@
                 };
                 saveStore();
                 renderAccountSwitcher();
-                updatePovBottomNav();
+                updatePovUI();
                 closeModal('modal-new-account');
                 alert('@' + username + ' 캐릭터가 추가되었습니다.');
             };
 
-            if (fileInput.files && fileInput.files[0])
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => saveAcc(e.target.result);
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                saveAcc('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150');
+            }
+        }
+
+        function renderAccountSwitcher() {
+            const container = document.getElementById('account-switcher');
+            const selectPost = document.getElementById('post-author-select');
+            const selectStory = document.getElementById('story-author-select');
+            container.innerHTML = ''; selectPost.innerHTML = ''; selectStory.innerHTML = '';
+
+            Object.values(store.accounts).forEach(acc => {
+                const btn = document.createElement('button');
+                btn.className = `w-full flex items-center gap-2 p-2 rounded-lg text-left text-xs ${store.currentAccount === acc.username ? 'bg-pink-50 text-pink-600 font-semibold' : 'hover:bg-gray-50'}`;
+                btn.onclick = () => {
+                    store.currentAccount = acc.username;
+                    saveStore();
+                    renderAccountSwitcher();
+                    updatePovUI();
+                    if (activeTab === 'dm') renderDmView();
+                    if (activeTab === 'profile') renderProfile(activeProfileId);
+                };
+                btn.innerHTML = `<img src="${acc.avatar}" class="w-5 h-5 rounded-full object-cover"><span class="truncate">${acc.username}</span>`;
+                container.appendChild(btn);
+
+                const opt = `<option value="${acc.username}">@${acc.username} (${acc.fullName})</option>`;
+                selectPost.innerHTML += opt;
+                selectStory.innerHTML += opt;
+            });
+
+            const cur = store.accounts[store.currentAccount] || Object.values(store.accounts)[0];
+            if (cur) {
+                document.getElementById('nav-user-avatar').src = cur.avatar;
+            }
+        }
+
+        function formatMentionsAndTags(text) {
+            if (!text) return '';
+            return text
+                .replace(/@([a-zA-Z0-9_]+)/g, '<span class="text-pink-600 font-semibold cursor-pointer hover:underline" onclick="event.stopPropagation(); closeModal(\'modal-post-detail\'); viewProfile(\'$1\')">@$1</span>')
+                .replace(/#([가-힣a-zA-Z0-9_]+)/g, '<span class="text-pink-600 font-semibold cursor-pointer hover:underline" onclick="event.stopPropagation(); searchHashtag(\'$1\')">#$1</span>');
+        }
+
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+    </script>
+</body>
+</html>
